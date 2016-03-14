@@ -440,3 +440,15 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+int sys_history(void)
+{
+
+   char * buffer;
+  int historyId;
+
+  if(argstr(0, &buffer) < 0 || argint(1, &historyId) < 0 )
+    return -1;
+  return get_history(f, p, n);
+ 
+}

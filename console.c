@@ -13,6 +13,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "x86.h"
+#include "kbd.h"
 
 static void consputc(int);
 
@@ -74,23 +75,23 @@ cprintf(char *fmt, ...)
     if(c == 0)
       break;
     switch(c){
-    case 'd':
+      case 'd':
       printint(*argp++, 10, 1);
       break;
-    case 'x':
-    case 'p':
+      case 'x':
+      case 'p':
       printint(*argp++, 16, 0);
       break;
-    case 's':
+      case 's':
       if((s = (char*)*argp++) == 0)
         s = "(null)";
       for(; *s; s++)
         consputc(*s);
       break;
-    case '%':
+      case '%':
       consputc('%');
       break;
-    default:
+      default:
       // Print unknown % sequence to draw attention.
       consputc('%');
       consputc(c);
@@ -125,25 +126,62 @@ panic(char *s)
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
+static int moved_left=0;
+static char buffer[128];
+static int history_index=-1;
 
-static void
-cgaputc(int c)
+
+
+
+
+
+static void cgaputc(int c)
 {
+  char replace=' ';
   int pos;
+
   
   // Cursor position: col + 80*row.
   outb(CRTPORT, 14);
   pos = inb(CRTPORT+1) << 8;
   outb(CRTPORT, 15);
   pos |= inb(CRTPORT+1);
+  if(c == '\n'){
+     outb(CRTPORT, 14);
+  outb(CRTPORT+1, (pos+moved_left)>>8);
+    pos=pos + (80 - (pos+moved_left)%80)+moved_left;
+  moved_left=0;
+}
+else if(c == BACKSPACE){
+  if(pos > 0) --pos;
+} 
+else if(c== KEY_LF){ 
+  if(pos >0){
+  replace=crt[pos-1];
+  pos--;
+  moved_left++;
+}
 
-  if(c == '\n')
-    pos += 80 - pos%80;
-  else if(c == BACKSPACE){
-    if(pos > 0) --pos;
-  } else
+}
+else if(c==KEY_RT){
+  if(moved_left>0){
+    replace=crt[pos+1];
+    pos++;
+    moved_left--;
+  }
+}
+ if(c==KEY_UP){
+ history_index++;
+ put_history(history_index);
+}
+ if(c==KEY_DN){
+  history_index--;
+ put_history(history_index);
+}
+
+else{
     crt[pos++] = (c&0xff) | 0x0700;  // black on white
-
+  }
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
   
@@ -152,12 +190,26 @@ cgaputc(int c)
     pos -= 80;
     memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
   }
-  
+ 
+ if(c!=RIGHTARR && c!=LEFTARR){
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
+  crt[pos] = replace | 0x0700;
+
+    
+ 
+  }
+ 
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  crt[pos] = ' ' | 0x0700;
+
+ 
+ 
+}
+put_history(int history_index){
+    history(buffer,history_index);
+    int len= strlen(buffer);
+    safestrcpy(buffer,)
 }
 
 void
@@ -172,7 +224,7 @@ consputc(int c)
   if(c == BACKSPACE){
     uartputc('\b'); uartputc(' '); uartputc('\b');
   } else
-    uartputc(c);
+  uartputc(c);
   cgaputc(c);
 }
 
@@ -198,33 +250,33 @@ consoleintr(int (*getc)(void))
       doprocdump = 1;   // procdump() locks cons.lock indirectly; invoke later
       break;
     case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    case C('H'): case '\x7f':  // Backspace
-      if(input.e != input.w){
-        input.e--;
-        consputc(BACKSPACE);
-      }
-      break;
-    default:
-      if(c != 0 && input.e-input.r < INPUT_BUF){
-        c = (c == '\r') ? '\n' : c;
-        input.buf[input.e++ % INPUT_BUF] = c;
-        consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-          input.w = input.e;
-          wakeup(&input.r);
-        }
-      }
-      break;
-    }
+    while(input.e != input.w &&
+      input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+      input.e--;
+    consputc(BACKSPACE);
   }
-  release(&cons.lock);
-  if(doprocdump) {
+  break;
+    case C('H'): case '\x7f':  // Backspace
+    if(input.e != input.w){
+      input.e--;
+      consputc(BACKSPACE);
+    }
+    break;
+    default:
+    if(c != 0 && input.e-input.r < INPUT_BUF){
+      c = (c == '\r') ? '\n' : c;
+      input.buf[input.e++ % INPUT_BUF] = c;
+      consputc(c);
+      if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+        input.w = input.e;
+        wakeup(&input.r);
+      }
+    }
+    break;
+  }
+}
+release(&cons.lock);
+if(doprocdump) {
     procdump();  // now call procdump() wo. cons.lock held
   }
 }
