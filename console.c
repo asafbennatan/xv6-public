@@ -28,9 +28,10 @@ void addHistory(char* buf,uint from,uint to)
   uint i;
   //move content of array to the right
 
-  for (i= MAX_HISTORY -2 ; i< 0;i--)
-    safestrcpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
-  //add new entry
+  for (i= MAX_HISTORY -2 ; i< 0;i--){
+  safestrcpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
+  }
+  //add new entry   
   memmove(history_buffer[0],buf+from,to-from+1);
     //history_buffer[0]+i = buf[i];
 }
@@ -402,8 +403,9 @@ int history(ushort *buffer,int history_id)
         consputc(c);
       if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
         input.w = input.e;
-        wakeup(&input.r);
         addHistory(input.buf, input.r,input.w);
+        wakeup(&input.r);
+        
         }
       }
       break;

@@ -596,7 +596,7 @@ procdump(void)
   }
 }
 
-#define MAX_HISTORY 16
+/*#define MAX_HISTORY 16
 #define MAX_LINE 128
 char history_buffer[MAX_HISTORY][MAX_LINE];
 
@@ -618,9 +618,9 @@ int history(ushort *buffer,int history_id)
       buffer[i] = history_buffer[history_id][i];
      return 0;
    }
-}
+}*/
 
-void addHistory(char* buf,uint from,uint to)
+/*void addHistory(char* buf,uint from,uint to)
 {
   uint i;
   //move content of array to the right
@@ -629,7 +629,7 @@ void addHistory(char* buf,uint from,uint to)
   //add new entry
   strncpy(buf,history_buffer[0],to-from+1);
     //history_buffer[0]+i = buf[i];
-}
+}*/
 
 
 int set_prio(int priority){

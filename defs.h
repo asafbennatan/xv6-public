@@ -120,7 +120,7 @@ int             wait(void);
 int             wait2(int *retime,int *rutime,int *stime );
 void            wakeup(void*);
 void            yield(void);
-int 			history(ushort*,int);
+//int 			history(ushort*,int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

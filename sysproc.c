@@ -90,7 +90,7 @@ sys_uptime(void)
   return xticks;
 }
 
-int sys_history(void)
+/*int sys_history(void)
 {
 
   char * buffer;
@@ -100,7 +100,7 @@ int sys_history(void)
     return -1;
   return history((ushort*)buffer,history_id);
   
-}
+}*/
 
 int sys_set_prio(void){
     int priority;
