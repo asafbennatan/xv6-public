@@ -107,6 +107,7 @@ int             pipewrite(struct pipe*, char*, int);
 struct proc*    copyproc(struct proc*);
 void            exit(void);
 int             fork(void);
+int             set_prio(int priority);
 int             growproc(int);
 int             kill(int);
 void            pinit(void);
@@ -116,10 +117,10 @@ void            sched(void);
 void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(void);
+int             wait2(int *retime,int *rutime,int *stime );
 void            wakeup(void*);
 void            yield(void);
-//int 			history(ushort*,int);
-//void 			addHistory(char*,uint,uint);
+int 			history(ushort*,int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -158,6 +159,7 @@ void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
 extern struct spinlock tickslock;
+void decrease_priority(struct proc * p);
 
 // uart.c
 void            uartinit(void);

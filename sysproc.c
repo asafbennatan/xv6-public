@@ -89,7 +89,7 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-/*
+
 int sys_history(void)
 {
 
@@ -101,7 +101,14 @@ int sys_history(void)
   return history((ushort*)buffer,history_id);
   
 }
-*/
+
+int sys_set_prio(void){
+    int priority;
+    if(argint(0,&priority)< 0){
+        return -1;
+    }
+    return set_prio(priority);
+}
 
 
 

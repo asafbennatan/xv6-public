@@ -100,6 +100,11 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
+  //Set Creation Time
+  p->ctime=ticks;
+  
+  //Set Priority
+  p->priority=2;
 }
 
 // Grow current process's memory by n bytes.
@@ -148,7 +153,17 @@ fork(void)
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
-
+  // Set Statistics
+  np->ctime=ticks;
+  np->retime=0;
+  np->rutime=0;
+  np->ttime=-1;
+  np->ctime=0;
+  
+  // Priority copy
+  np->priority=proc->priority;
+  
+  
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
@@ -161,6 +176,8 @@ fork(void)
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
   np->state = RUNNABLE;
+  //set time when entered runnable state
+  np->timeIntoReady=ticks;
   release(&ptable.lock);
   
   return pid;
@@ -192,6 +209,8 @@ exit(void)
   proc->cwd = 0;
 
   acquire(&ptable.lock);
+  //added for task 2 assignment 1
+  proc->ttime=ticks;
 
   // Parent might be sleeping in wait().
   wakeup1(proc->parent);
@@ -254,6 +273,51 @@ wait(void)
   }
 }
 
+int wait2(int *retime,int *rutime,int *stime ){
+    struct proc *p;
+  int havekids, pid;
+
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for zombie children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent != proc)
+        continue;
+      havekids = 1;
+      if(p->state == ZOMBIE){
+        // Found one.
+        pid = p->pid;
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->state = UNUSED;
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        *retime=p->retime;
+        *rutime=p->rutime;
+        *stime=p->stime;
+        release(&ptable.lock);
+        return pid;
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if(!havekids || proc->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(proc, &ptable.lock);  //DOC: wait-sleep
+  }
+}
+
+
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -262,34 +326,85 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
-void
-scheduler(void)
-{
-  struct proc *p;
 
-  for(;;){
-    // Enable interrupts on this processor.
-    sti();
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      // Switch to chosen process.  It is the process's job
+void schedule_selected(struct proc *p){
+    // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+      
+      //added for task 2 assignment 1
+      if(proc){
+          proc->timeIntoReady=ticks;
+      }
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      //added for task 2 assignment 1
+      if(proc->timeIntoReady>0){
+          proc->retime=proc->retime + (ticks-proc->timeIntoReady);
+          proc->timeIntoReady=-1;
+      }
+      
+      
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+    
+}
+void scheduler(void)
+{
+  struct proc *p;
+  int priority;
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
+
+    
+    acquire(&ptable.lock);
+    switch(SCHEDFLAG){
+        case DML:
+        case SML:
+        for(priority=1;priority<=3; priority++){
+            int found=0;
+             for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+                 
+                   if(found&&p==&ptable.proc[NPROC]){
+                        priority=0;
+                    }
+                     
+                    if(p->state != RUNNABLE)
+                        continue;
+                if(p->priority==priority){
+                    found=1;
+                    
+                    schedule_selected(p);
+                    priority=1;
+                  
+                }
+                
+
+      
+        }
+            
+        }
+            
+        break;
+                
+        default: 
+        // Loop over process table looking for process to run. 
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+            if(p->state != RUNNABLE)
+                continue;
+        schedule_selected(p);
+
+      
+        }
     }
+   
     release(&ptable.lock);
 
   }
@@ -321,7 +436,10 @@ yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
   proc->state = RUNNABLE;
+  proc->timeIntoReady=ticks;
   sched();
+  proc->retime=proc->retime + (ticks -proc->timeIntoReady);
+  proc->timeIntoReady=-1;
   release(&ptable.lock);
 }
 
@@ -350,7 +468,8 @@ forkret(void)
 // Reacquires lock when awakened.
 void
 sleep(void *chan, struct spinlock *lk)
-{
+{ 
+  
   if(proc == 0)
     panic("sleep");
 
@@ -371,7 +490,9 @@ sleep(void *chan, struct spinlock *lk)
   // Go to sleep.
   proc->chan = chan;
   proc->state = SLEEPING;
+  int time_started_sleeping=ticks;
   sched();
+  proc->stime=proc->stime+(ticks-time_started_sleeping);
 
   // Tidy up.
   proc->chan = 0;
@@ -392,8 +513,17 @@ wakeup1(void *chan)
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+    if(p->state == SLEEPING && p->chan == chan){
       p->state = RUNNABLE;
+      //added for task 2 Assignment 1
+      p->timeIntoReady=ticks;
+      //added for task 3 Assignment 1
+       if(SCHEDFLAG==DML){
+      p->priority=1;
+      }
+    }
+    
+      
 }
 
 // Wake up all processes sleeping on chan.
@@ -420,6 +550,7 @@ kill(int pid)
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
         p->state = RUNNABLE;
+        p->timeIntoReady=ticks;
       release(&ptable.lock);
       return 0;
     }
@@ -464,7 +595,7 @@ procdump(void)
     cprintf("\n");
   }
 }
-/*
+
 #define MAX_HISTORY 16
 #define MAX_LINE 128
 char history_buffer[MAX_HISTORY][MAX_LINE];
@@ -488,8 +619,7 @@ int history(ushort *buffer,int history_id)
      return 0;
    }
 }
-*/
-/*
+
 void addHistory(char* buf,uint from,uint to)
 {
   uint i;
@@ -497,7 +627,16 @@ void addHistory(char* buf,uint from,uint to)
   for (i=sizeof(history_buffer) / sizeof(history_buffer[0])-1; i< 0;i--)
     strncpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
   //add new entry
-  memmove(buf,history_buffer[0],to-from+1);
+  strncpy(buf,history_buffer[0],to-from+1);
     //history_buffer[0]+i = buf[i];
 }
-*/
+
+
+int set_prio(int priority){
+    if(SCHEDFLAG==SML&&priority>0 && priority < 4){
+       proc->priority=priority; 
+       return 0;
+    }
+    return -1;
+    
+}

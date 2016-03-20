@@ -5,6 +5,7 @@ struct rtcdate;
 int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);
+int wait2(int *retime,int *rutime,int *stime );
 int pipe(int*);
 int write(int, void*, int);
 int read(int, void*, int);
@@ -22,9 +23,11 @@ int dup(int);
 int getpid(void);
 char* sbrk(int);
 int sleep(int);
+
 int uptime(void);
-//int history(char *buf,int history_id);
-//void addHistory(char* buf, uint from, uint to);
+int history(char *buf,int history_id);
+void addHistory(char* buf, uint from, uint to);
+int set_prio(int priority);
 
 // ulib.c
 int stat(char*, struct stat*);

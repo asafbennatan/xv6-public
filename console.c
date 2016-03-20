@@ -13,47 +13,10 @@
   #include "mmu.h"
   #include "proc.h"
   #include "x86.h"
-
-
-
-//void addHistory(char*,uint,uint);
+  //#include "user.h"
+void addHistory(char*,uint,uint);
 static void moveBufferByOne(int left,char *buffer,int starting);
 static int moveCRTByOne(int left,ushort *buffer,int starting);
-
-#define MAX_HISTORY 16
-#define MAX_INPUT 128
-static char history_buffer [MAX_HISTORY][MAX_INPUT];
-void addHistory(char* buf,uint from,uint to)
-{
-  uint i;
-  //move content of array to the right
-
-  for (i= MAX_HISTORY -2 ; i< 0;i--)
-    safestrcpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
-  //add new entry
-  memmove(history_buffer[0],buf+from,to-from+1);
-    //history_buffer[0]+i = buf[i];
-}
-
-int history(ushort *buffer,int history_id)
-{
-  if(history_id<0 || history_id>MAX_HISTORY-1){
-    return -2;
-  }
-  else
-    if(history_buffer[history_id]==0){
-      return -1;
-    }
-    else
-    {
-    //int i;
-    int len = strlen(history_buffer[history_id]);
-    memmove(buffer,history_buffer[history_id],len);
-    //for(i=0;i<len;i++)
-     // buffer[i] = history_buffer[history_id][i];
-     return 0;
-   }
-}
 
   static void consputc(int);
 
@@ -177,9 +140,18 @@ int history(ushort *buffer,int history_id)
 
 
  static void put_history(int history_index, int crt_pos){
-      history(crt+crt_pos,history_index);
-      }
-  
+      history(&crt[crt_pos%80],history_index);
+     // int len= strlen(history_buffer);
+      //int i;
+      //for (i=0; i<len;i++)
+      //  crt[(crt_pos+i)%80] = history_buffer[i];
+      //safestrcpy(crt[crt_pos%80],history_buffer,len);
+  }
+
+  //static void addToHistory(char* buf, int from,int to)
+  //{
+   // addHistory(buf,from,to);
+ // }
 
 
   static void cgaputc(int c)
@@ -198,19 +170,17 @@ int history(ushort *buffer,int history_id)
       //outb(CRTPORT, 14);
       //outb(CRTPORT+1, (pos+moved_left)>>8);
       pos = pos + moved_left;
-      pos = pos + (80 - (pos)%80);
+      pos = pos + (80 - (pos)%80)/*+moved_left*/;
       moved_left=0;
   }
   else if(c == BACKSPACE){
-    if(pos > 0) {
-      --pos;
-      replace=moveCRTByOne(1,crt,pos);
-    }
+    if(pos > 0) {--pos;replace=moveCRTByOne(1,crt,pos);}
   } 
   else if(c== KEY_LF){ 
     if((pos%80) > 2){
     replace=crt[pos-1];
     pos--;
+    //moved_left++;
   }
     else
       if ((pos%80) == 2){
@@ -218,20 +188,21 @@ int history(ushort *buffer,int history_id)
       }
   }
   else if(c==KEY_RT){
-    if(moved_left>=0){
+    if(moved_left>0){
       replace=crt[pos+1];
       pos++;
+      //moved_left--;
     }
   }
   else
    if(c==KEY_UP){
-   //history_index++;
-    put_history(history_index,80 - (pos%80));
+   history_index++;
+   put_history(history_index,80 - (pos%80));
   }
   else
    if(c==KEY_DN){
-    //history_index--;
-  put_history(history_index,80 - (pos%80));
+    history_index--;
+   put_history(history_index,pos);
   }
 
   else{
@@ -288,6 +259,9 @@ int history(ushort *buffer,int history_id)
   } input;
 
   #define C(x)  ((x)-'@')  // Control-x
+  //static int movedl =0;
+
+
 
  static int  moveCRTByOne(int left,ushort *buffer,int starting){
     int i;
@@ -321,7 +295,6 @@ int history(ushort *buffer,int history_id)
   }
 
   static int writechar=1;
-
   void
   consoleintr(int (*getc)(void))
   {
@@ -353,11 +326,10 @@ int history(ushort *buffer,int history_id)
         c = (c == '\r') ? '\n' : c;
         if(c == KEY_RT)
         {
-          if (/*input.e < input.e + moved_left*/ moved_left > 0)
+          if (input.e < input.e + moved_left)
           {
           input.e++;
           moved_left--;
-          writechar=1;
           }
           else
             writechar=0;
@@ -369,41 +341,28 @@ int history(ushort *buffer,int history_id)
             {
             input.e--;
             moved_left++;
-            writechar=1;
           }
           else
             writechar =0;
           }
-          else
-            if (c == KEY_UP)
-            {
-              history_index++;
-              writechar=1;
-            }
-            else
-              if (c== KEY_DN)
-              {
-                history_index--;
-                writechar=1;
-              }
          else if (c == '\n')
           {
+
            input.e = (input.e + moved_left) % INPUT_BUF;
            input.buf[input.e++ % INPUT_BUF] = c;
            writechar =1;
           }
           else
           {
-            writechar =1;
         moveBufferByOne(0,input.buf,input.e);
         input.buf[input.e++ % INPUT_BUF] = c;
       }
       if (writechar)
         consputc(c);
-      if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-        input.w = input.e;
-        wakeup(&input.r);
-        addHistory(input.buf, input.r,input.w);
+        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+          input.w = input.e;
+          addHistory(input.buf, input.r,input.e);
+          wakeup(&input.r);
         }
       }
       break;

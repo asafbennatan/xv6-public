@@ -51,9 +51,16 @@ trap(struct trapframe *tf)
     if(cpu->id == 0){
       acquire(&tickslock);
       ticks++;
+      // added for task 2 assignment 1
+      
       wakeup(&ticks);
       release(&tickslock);
     }
+    if(cpu->proc){
+        cpu->proc->rutime++;
+    }
+    
+    
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_IDE:
@@ -102,10 +109,35 @@ trap(struct trapframe *tf)
 
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
-  if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER)
-    yield();
+  if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER){
+      if(SCHEDFLAG!=FCFS){
+          if(proc->timeFromLastYield==QUANTA){
+            //added for task 3 assignmnet 1
+            if(SCHEDFLAG==DML){
+                decrease_priority(proc);
+            }
+            
+            
+          yield();
+          proc->timeFromLastYield=0;
+      }
+      else{
+          proc->timeFromLastYield++;
+        } 
+      }
+      
+  }
+     
+    
 
   // Check if the process has been killed since we yielded
   if(proc && proc->killed && (tf->cs&3) == DPL_USER)
     exit();
+}
+
+//function to be used when a process has been running a full quanta
+void decrease_priority(struct proc * p){
+    if(p->priority<3){
+        p->priority++;
+    }
 }

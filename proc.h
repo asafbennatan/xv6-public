@@ -66,6 +66,14 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int ctime;                   // Creation time
+  int stime;                   // Overall Sleep Time
+  int retime;                  // Overall Ready Time
+  int rutime;                  // Overall Run  Time
+  int ttime;                   // Termination Time
+  int timeIntoReady;           // time this proc has entered ready state
+  int timeFromLastYield;       // time from lastYield
+  int priority;                 // number ranges from 1 to 3 spesifies the priority (Lower is better)
 };
 
 // Process memory is laid out contiguously, low addresses first:
