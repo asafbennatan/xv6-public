@@ -159,6 +159,7 @@ fork(void)
   np->rutime=0;
   np->ttime=-1;
   np->ctime=0;
+  np->stime=0;
   
   // Priority copy
   np->priority=proc->priority;
@@ -368,26 +369,29 @@ void scheduler(void)
     switch(SCHEDFLAG){
         case DML:
         case SML:
-        for(priority=1;priority<=3; priority++){
+        for(priority=3;priority>0; priority--){
+            
             int found=0;
              for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-                 
-                   if(found&&p==&ptable.proc[NPROC]){
-                        priority=0;
-                    }
-                     
-                    if(p->state != RUNNABLE)
-                        continue;
-                if(p->priority==priority){
-                    found=1;
-                    
-                    schedule_selected(p);
-                    priority=1;
                   
-                }
+                     
+                    if(p->state != RUNNABLE||p->priority!=priority)
+                        continue;
+                        
+               \
+            //cprintf("checking priority %d \n",priority);
+                    priority=3;
+                    found=1;
+                    schedule_selected(p);
+                   
+                  
+                
                 
 
       
+        }
+        if(found){
+            priority=4;
         }
             
         }
@@ -490,9 +494,13 @@ sleep(void *chan, struct spinlock *lk)
   // Go to sleep.
   proc->chan = chan;
   proc->state = SLEEPING;
-  int time_started_sleeping=ticks;
+  proc->timeIntoSleep=ticks;
   sched();
-  proc->stime=proc->stime+(ticks-time_started_sleeping);
+  if(proc->timeIntoSleep>0){
+       proc->stime=proc->stime+(ticks-proc->timeIntoSleep);
+  }
+ 
+  proc->timeIntoSleep=0;
 
   // Tidy up.
   proc->chan = 0;
@@ -519,7 +527,7 @@ wakeup1(void *chan)
       p->timeIntoReady=ticks;
       //added for task 3 Assignment 1
        if(SCHEDFLAG==DML){
-      p->priority=1;
+      p->priority=3;
       }
     }
     
@@ -548,9 +556,11 @@ kill(int pid)
     if(p->pid == pid){
       p->killed = 1;
       // Wake process from sleep if necessary.
-      if(p->state == SLEEPING)
-        p->state = RUNNABLE;
+      if(p->state == SLEEPING){
+          p->state = RUNNABLE;
         p->timeIntoReady=ticks;
+      }
+        
       release(&ptable.lock);
       return 0;
     }
@@ -596,40 +606,6 @@ procdump(void)
   }
 }
 
-/*#define MAX_HISTORY 16
-#define MAX_LINE 128
-char history_buffer[MAX_HISTORY][MAX_LINE];
-
-int history(ushort *buffer,int history_id)
-{
-  if(history_id<0 || history_id>MAX_HISTORY-1){
-    return -2;
-  }
-  else
-    if(history_buffer[history_id]==0){
-      return -1;
-    }
-    else
-    {
-    int i;
-    int len = strlen(history_buffer[history_id]);
-    for(i=0;i<len;i++)
-      //buffer= history_buffer[history_id];
-      buffer[i] = history_buffer[history_id][i];
-     return 0;
-   }
-}*/
-
-/*void addHistory(char* buf,uint from,uint to)
-{
-  uint i;
-  //move content of array to the right
-  for (i=sizeof(history_buffer) / sizeof(history_buffer[0])-1; i< 0;i--)
-    strncpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
-  //add new entry
-  strncpy(buf,history_buffer[0],to-from+1);
-    //history_buffer[0]+i = buf[i];
-}*/
 
 
 int set_prio(int priority){

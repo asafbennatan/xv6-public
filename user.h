@@ -23,10 +23,10 @@ int dup(int);
 int getpid(void);
 char* sbrk(int);
 int sleep(int);
-
+int yield(void);
 int uptime(void);
 int history(char *buf,int history_id);
-void addHistory(char* buf, uint from, uint to);
+//void addHistory(char* buf, uint from, uint to);
 int set_prio(int priority);
 
 // ulib.c

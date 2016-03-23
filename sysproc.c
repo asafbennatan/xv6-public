@@ -7,6 +7,7 @@
 #include "mmu.h"
 #include "proc.h"
 
+
 int
 sys_fork(void)
 {
@@ -24,6 +25,23 @@ int
 sys_wait(void)
 {
   return wait();
+}
+
+int
+sys_wait2(void)
+{
+    int retime_addr,rutime_addr,stime_addr;
+     int* retime;
+     int *rutime;
+     int *stime;
+     
+    if(argint(0,&retime_addr)<0 || argint(1,&rutime_addr)<0 ||argint(2,&stime_addr)<0 ){
+        return -1;
+    }
+    retime=(int *)retime_addr;
+    rutime=(int *)rutime_addr;
+    stime=(int *)stime_addr;
+  return wait2(retime,rutime,stime);
 }
 
 int
@@ -90,17 +108,13 @@ sys_uptime(void)
   return xticks;
 }
 
-/*int sys_history(void)
+int sys_yield(void)
 {
+ yield();
+ return 0;
+}
 
-  char * buffer;
-  int history_id;
 
-  if(argstr(0, &buffer) < 0 || argint(1, &history_id) < 0 )
-    return -1;
-  return history((ushort*)buffer,history_id);
-  
-}*/
 
 int sys_set_prio(void){
     int priority;

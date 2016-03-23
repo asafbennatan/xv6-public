@@ -20,6 +20,24 @@
 static void moveBufferByOne(int left,char *buffer,int starting);
 static int moveCRTByOne(int left,ushort *buffer,int starting);
 
+
+void* copy_char_with_spaces(char *vdst, char *vsrc, int n)
+{
+  char *dst, *src;
+  
+  dst = vdst;
+  src = vsrc;
+  
+  while(n-- > 0)
+{
+    *dst++ = *src++;
+    *dst='\a';
+    dst=dst+1;
+    
+  }
+  return vdst;
+}
+
 #define MAX_HISTORY 16
 #define MAX_INPUT 128
 static char history_buffer [MAX_HISTORY][MAX_INPUT];
@@ -28,15 +46,17 @@ void addHistory(char* buf,uint from,uint to)
   uint i;
   //move content of array to the right
 
-  for (i= MAX_HISTORY -2 ; i< 0;i--){
-  safestrcpy(history_buffer[i],history_buffer[i-1],strlen(history_buffer[i-1]));
+  for (i= MAX_HISTORY -2 ; i > 0;i--){
+    memset(history_buffer[i],0,128);
+    memmove(history_buffer[i],history_buffer[i-1],128);
   }
+  memset(history_buffer[0],0,128);
   //add new entry   
   memmove(history_buffer[0],buf+from,to-from+1);
     //history_buffer[0]+i = buf[i];
 }
 
-int history(ushort *buffer,int history_id)
+int history(char *buffer,int history_id)
 {
   if(history_id<0 || history_id>MAX_HISTORY-1){
     return -2;
@@ -174,11 +194,20 @@ int history(ushort *buffer,int history_id)
   static int moved_left=0;
   //static char history_buffer[128];
   static int history_index=-1;
+    static char put_history_buffer[128];
 
 
-
- static void put_history(int history_index, int crt_pos){
-      history(crt+crt_pos,history_index);
+ static int put_history(int history_index, int crt_pos){
+     memset(put_history_buffer,0,128);
+     if(history(put_history_buffer,history_index)==0){
+         int len=strlen(put_history_buffer);
+         char * buffer=(char *)crt+(2* crt_pos);
+         memset(buffer,0,256);
+        copy_char_with_spaces(buffer,put_history_buffer,len);
+           return crt_pos+len;
+      }
+      
+     return -1;
       }
   
 
@@ -187,7 +216,7 @@ int history(ushort *buffer,int history_id)
   {
     char replace=' ';
     int pos;
-
+     int update=-1;
     
     // Cursor position: col + 80*row.
     outb(CRTPORT, 14);
@@ -201,6 +230,7 @@ int history(ushort *buffer,int history_id)
       pos = pos + moved_left;
       pos = pos + (80 - (pos)%80);
       moved_left=0;
+      history_index=-1;
   }
   else if(c == BACKSPACE){
     if(pos > 0) {
@@ -227,12 +257,17 @@ int history(ushort *buffer,int history_id)
   else
    if(c==KEY_UP){
    //history_index++;
-    put_history(history_index,80 - (pos%80));
+  
+    if((update=put_history(history_index,pos - (pos%80) +2))>0){
+        pos=update;
+    }
   }
   else
    if(c==KEY_DN){
     //history_index--;
-  put_history(history_index,80 - (pos%80));
+  if((update=put_history(history_index,pos - (pos%80)+ 2)) > 0){
+      pos=update;
+  }
   }
 
   else{
@@ -378,17 +413,43 @@ int history(ushort *buffer,int history_id)
           else
             if (c == KEY_UP)
             {
-              history_index++;
-              writechar=1;
+                if(history_index<MAX_HISTORY-1&&strlen(history_buffer[history_index+1])>0){
+                     history_index++;
+              memset(put_history_buffer,0,128);
+              if(history(put_history_buffer,history_index)  ==0){
+                  int len=strlen(history_buffer[history_index]);
+                  memset(input.buf+input.r,0,input.e-input.r);
+                  memmove(input.buf+input.r,put_history_buffer,len);
+                  input.e=input.r+len;
+                  
+                  writechar=1;
+              }
+                }
+             
+              
+              
+              
             }
             else
               if (c== KEY_DN)
               {
-                history_index--;
-                writechar=1;
+                  if(history_index>0){
+                        history_index--;
+                memset(put_history_buffer,0,128);
+              if(history(put_history_buffer,history_index)==0){
+                  int len=strlen(history_buffer[history_index]);
+                  memset(input.buf+input.r,0,input.e-input.r);
+                  memmove(input.buf+input.r,put_history_buffer,len);
+                  input.e=input.r+len;
+                  
+                  writechar=1;
+              }
+                  }
+              
               }
          else if (c == '\n')
           {
+           
            input.e = (input.e + moved_left) % INPUT_BUF;
            input.buf[input.e++ % INPUT_BUF] = c;
            writechar =1;
@@ -403,13 +464,16 @@ int history(ushort *buffer,int history_id)
         consputc(c);
       if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
         input.w = input.e;
-        addHistory(input.buf, input.r,input.w);
+        if(input.e-input.r>1){
+            addHistory(input.buf, input.r,input.w-2);
+        }
+        
         wakeup(&input.r);
         
         }
       }
       break;
-    }
+    }   
   }
   release(&cons.lock);
   if(doprocdump) {
@@ -485,3 +549,14 @@ int history(ushort *buffer,int history_id)
     ioapicenable(IRQ_KBD, 0);
   }
 
+int sys_history(void)
+{
+
+  char * buffer;
+  int history_id;
+
+  if(argstr(0, &buffer) < 0 || argint(1, &history_id) < 0 )
+    return -1;
+  return history(buffer,history_id);
+  
+}

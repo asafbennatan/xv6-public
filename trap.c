@@ -137,7 +137,7 @@ trap(struct trapframe *tf)
 
 //function to be used when a process has been running a full quanta
 void decrease_priority(struct proc * p){
-    if(p->priority<3){
-        p->priority++;
+    if(p->priority>1){
+        p->priority--;
     }
 }

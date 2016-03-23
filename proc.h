@@ -74,6 +74,7 @@ struct proc {
   int timeIntoReady;           // time this proc has entered ready state
   int timeFromLastYield;       // time from lastYield
   int priority;                 // number ranges from 1 to 3 spesifies the priority (Lower is better)
+  int timeIntoSleep;            // time stated sleeping
 };
 
 // Process memory is laid out contiguously, low addresses first:

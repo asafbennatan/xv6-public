@@ -11,6 +11,7 @@
 #define LIST  4
 #define BACK  5
 
+
 #define MAXARGS 10
 
 struct cmd {
@@ -52,7 +53,7 @@ struct backcmd {
 int fork1(void);  // Fork but panics on failure.
 void panic(char*);
 struct cmd *parsecmd(char*);
-
+void print_history();
 // Execute cmd.  Never returns.
 void
 runcmd(struct cmd *cmd)
@@ -75,8 +76,15 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit();
-    exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "exec %s failed\n", ecmd->argv[0]);
+    if(strcmp(ecmd->argv[0],"history")==0){
+        print_history();
+        
+        
+    }else{
+      exec(ecmd->argv[0], ecmd->argv);
+    printf(2, "exec %s failed\n", ecmd->argv[0]);  
+    }
+    
     break;
 
   case REDIR:
@@ -491,4 +499,15 @@ nulterminate(struct cmd *cmd)
     break;
   }
   return cmd;
+}
+void print_history(){
+    char buffer[128];
+    for(int i=0;i<16;i++){
+       
+        if( history(buffer,i)==0&&strlen(buffer)>0){
+           printf(1,"%d            %s \n",(i+1),buffer); 
+        }
+        memset(buffer,0,128);
+        
+    }
 }

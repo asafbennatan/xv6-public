@@ -12,12 +12,16 @@ void dummy_loop()
 
 void sanity(int n)
 {
-    int rtime;
-    int retime;
-    int stime;
+    int rtime[3*n];
+    int retime[3*n];
+    int stime[3*n];
+    int stats[3][3];
+    int child=-1;
+    printf(1,"sanity stated \n");
     for (int i = 0; i < 3 * n; i++) {
-        if (!fork()) {
-            int o = i % 3;
+        int o = i % 3;
+        if (!(child=fork())) {  
+            
             switch (o) {
             case 0:
                 for (int i = 0; i < 100; i++) {
@@ -27,7 +31,7 @@ void sanity(int n)
             case 1:
                 for (int i = 0; i < 100; i++) {
                     dummy_loop();
-                    //yield();
+                    yield();
                 }
                 break;
             case 2:
@@ -38,18 +42,34 @@ void sanity(int n)
                 break;
             }
             break;
-        } else {
-            wait2(&retime, &rtime, &stime);
-            //cprintf("type %d,wait time: %d, run time: %d, sleep time: %d", (i % 3), retime, rtime, stime);
+        }
+            else {
+                
+            if(wait2(&retime[i], &rtime[i], &stime[i])>=0){
+            stats[o][0]+=retime[i];
+            stats[o][1]+=rtime[i];
+            stats[o][2]+=stime[i];
+            printf(1,"type %d,wait time: %d, run time: %d, sleep time: %d \n", (i % 3), retime[i], rtime[i], stime[i]);
+           
+            }
+             
+
         }
     }
+    if(child>0){
+        for(int i =0 ; i< 3;i++){
+        printf(1,"type %d, avg ready time: %d , avg run time: %d ,avg turnaround time: %d \n", (i % 3), stats[i][0] / n,stats[i][1] /n ,  (stats[i][0]+stats[i][1]+stats[i][2]) /n);
+    }
+    }
+    
+     
 }
 
 int main(int argc, char* argv[])
 {
     int n;
 
-    if (argc <= 0) {
+    if (argc <= 1) {
         printf(2, "usage: sanity <number of proccess>\n");
         exit();
     }
