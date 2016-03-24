@@ -378,7 +378,7 @@ void scheduler(void)
                     if(p->state != RUNNABLE||p->priority!=priority)
                         continue;
                         
-               \
+               
             //cprintf("checking priority %d \n",priority);
                     priority=3;
                     found=1;

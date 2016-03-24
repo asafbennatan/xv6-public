@@ -501,8 +501,9 @@ nulterminate(struct cmd *cmd)
   return cmd;
 }
 void print_history(){
+  int i;
     char buffer[128];
-    for(int i=0;i<16;i++){
+    for(i=0;i<16;i++){
        
         if( history(buffer,i)==0&&strlen(buffer)>0){
            printf(1,"%d            %s \n",(i+1),buffer); 

@@ -6,7 +6,8 @@
 
 void dummy_loop()
 {
-    for (int j = 0; j < 1000000; j++) {
+    int j;
+    for (j = 0; j < 1000000; j++) {
     }
 }
 
@@ -17,25 +18,27 @@ void sanity(int n)
     int stime[3*n];
     int stats[3][3];
     int child=-1;
+    int i;
+    int j;
     printf(1,"sanity stated \n");
-    for (int i = 0; i < 3 * n; i++) {
+    for (i = 0; i < 3 * n; i++) {
         int o = i % 3;
         if (!(child=fork())) {  
             
             switch (o) {
             case 0:
-                for (int i = 0; i < 100; i++) {
+                for (j= 0; j < 100; j++) {
                     dummy_loop();
                 }
                 break;
             case 1:
-                for (int i = 0; i < 100; i++) {
+                for (j = 0; j < 100; j++) {
                     dummy_loop();
                     yield();
                 }
                 break;
             case 2:
-                for (int i = 0; i < 100; i++) {
+                for (j = 0; j < 100; j++) {
                     dummy_loop();
                     sleep(1);
                 }
@@ -57,8 +60,8 @@ void sanity(int n)
         }
     }
     if(child>0){
-        for(int i =0 ; i< 3;i++){
-        printf(1,"type %d, avg ready time: %d , avg run time: %d ,avg turnaround time: %d \n", (i % 3), stats[i][0] / n,stats[i][1] /n ,  (stats[i][0]+stats[i][1]+stats[i][2]) /n);
+        for(j =0 ; j< 3;j++){
+        printf(1,"type %d, avg ready time: %d , avg run time: %d ,avg turnaround time: %d \n", (j % 3), stats[j][0] / n,stats[j][1] /n ,  (stats[j][0]+stats[j][1]+stats[j][2]) /n);
     }
     }
     
