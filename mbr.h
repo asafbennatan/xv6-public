@@ -1,7 +1,6 @@
 #define BOOTSTRAP 446
 
 #define NPARTITIONS 4
-
 #define PART_ALLOCATED	1	// allocated partition
 #define PART_BOOTABLE	2	// bootable partition
 
