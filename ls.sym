@@ -2,7 +2,7 @@
 00000aca .rodata
 00000b1c .eh_frame
 00000dbc .data
-00000dd0 .bss
+00000de0 .bss
 00000000 .comment
 00000000 .debug_aranges
 00000000 .debug_info
@@ -11,7 +11,7 @@
 00000000 .debug_str
 00000000 .debug_loc
 00000000 ls.c
-00000dd0 buf.1118
+00000de0 buf.1138
 00000000 ulib.c
 00000346 stosb
 00000000 printf.c
@@ -19,10 +19,11 @@
 00000660 printint
 00000dbc digits.1107
 00000000 umalloc.c
-00000de0 base
-00000de8 freep
+00000df0 base
+00000df8 freep
 00000987 morecore
 0000036c strcpy
+00000e00 sbs
 00000000 fmtname
 00000714 printf
 00000558 memmove
@@ -47,10 +48,11 @@
 00000402 memset
 000002e2 main
 0000039c strcmp
+00000e80 partitions
 00000615 dup
 000004be stat
 00000dcd _edata
-00000dec _end
+00000ee0 _end
 000005fd link
 000000b8 ls
 0000059d exit

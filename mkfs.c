@@ -10,14 +10,12 @@
 #include "fs.h"
 #include "stat.h"
 #include "param.h"
-#include "mbr.h"
 
 #ifndef static_assert
 #define static_assert(a, b) do { switch (0) case 0 : case(a) :; } while (0)
 #endif
 
-#define NELEM(x) (sizeof(x)/sizeof((x)[0]))
-
+#define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 
 #define NINODES 200
 
@@ -31,6 +29,8 @@ int nmeta;   // Number of meta blocks (boot, sb, nlog, inode, bitmap)
 int nblocks; // Number of data blocks
 
 int fsfd;
+int bootblockfd;
+int kernelfd;
 struct superblock sb;
 char zeroes[BSIZE];
 uint freeinode = 1;
@@ -78,8 +78,8 @@ int main(int argc, char* argv[])
 
     static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
 
-    if (argc < 2) {
-        fprintf(stderr, "Usage: mkfs fs.img files...\n");
+    if (argc < 4) {
+        fprintf(stderr, "Usage: mkfs fs.img bootblock kernel files...\n");
         exit(1);
     }
 
@@ -91,29 +91,52 @@ int main(int argc, char* argv[])
         perror(argv[1]);
         exit(1);
     }
-     // set MBR
-  
-
-    // 1 fs block = 1 disk sector
-    nmeta = 2 + nlog + ninodeblocks + nbitmap;
-    nblocks = FSSIZE - nmeta;
-
-      mbrI.partitions[0].offset = 1;
-    mbrI.partitions[0].size = sb.nblocks;
-    mbrI.partitions[0].flags = PART_BOOTABLE;
-    mbrI.partitions[0].type = FS_INODE;
-
+    // set MBR
+    bootblockfd = open(argv[2], O_RDONLY, 0666);
+    if (bootblockfd < 0) {
+        perror(argv[2]);
+        exit(1);
+    }
+    kernelfd = open(argv[3], O_RDONLY, 0666);
+    if (kernelfd < 0) {
+        perror(argv[3]);
+        exit(1);
+    }
     
+     if (read(bootblockfd, &mbrI, BSIZE) < 0) {
+        perror(argv[2]);
+        exit(1);
+    }
+    
+      memset(buf, 0, sizeof(buf));
+    i = 0;
+    while (read(kernelfd, buf, BSIZE) > 0) {
+        i++;
+        wsect(i, buf);
+        memset(buf, 0, sizeof(buf));
+        
+    }
+    close(bootblockfd);
+    close(kernelfd);
+    
+    // 1 fs block = 1 disk sector
+    nmeta = 1+i + nlog + ninodeblocks + nbitmap;
+    nblocks = FSSIZE - nmeta;
+   
+    mbrI.partitions[0].offset = i;
+    mbrI.partitions[0].size = nblocks;
+    mbrI.partitions[0].type = FS_INODE;
+    mbrI.partitions[0].number = 0;
+
+    sb.offset = xint(mbrI.partitions[0].offset);
     sb.size = xint(FSSIZE);
     sb.nblocks = xint(nblocks);
     sb.ninodes = xint(NINODES);
     sb.nlog = xint(nlog);
-    sb.logstart = xint(1+mbrI.partitions[0].offset);
-    sb.inodestart = xint(1+mbrI.partitions[0].offset + nlog);
-    sb.bmapstart = xint(1+mbrI.partitions[0].offset + nlog + ninodeblocks);
-    
+    sb.logstart = xint(mbrI.partitions[0].offset);
+    sb.inodestart = xint(mbrI.partitions[0].offset + nlog);
+    sb.bmapstart = xint(mbrI.partitions[0].offset + nlog + ninodeblocks);
 
-   
     printf("nmeta %d (boot, super, log blocks %u inode blocks %u, bitmap blocks %u) blocks %d total %d\n",
            nmeta,
            nlog,
@@ -127,20 +150,11 @@ int main(int argc, char* argv[])
     for (i = 0; i < FSSIZE; i++)
         wsect(i, zeroes);
 
-    // write MBR
-    memset(buf, 0, sizeof(buf));
-    memmove(buf, &mbrI, sizeof(struct mbr));
-    wsect(0, buf);
-
-    // read and print MBR
-    memset(buf, 0, sizeof(buf));
-    readmbr(buf);
-    struct mbr* rmbr = (struct mbr*)buf;
-    printMBR(rmbr);
-
     memset(buf, 0, sizeof(buf));
     memmove(buf, &sb, sizeof(sb));
     wsect(mbrI.partitions[0].offset, buf);
+
+  
 
     rootino = ialloc(T_DIR);
     assert(rootino == ROOTINO);
@@ -154,8 +168,10 @@ int main(int argc, char* argv[])
     de.inum = xshort(rootino);
     strcpy(de.name, "..");
     iappend(rootino, &de, sizeof(de));
+    int hasSh = 0;
+    int hasInit = 0;
 
-    for (i = 2; i < argc; i++) {
+    for (i = 4; i < argc; i++) {
         assert(index(argv[i], '/') == 0);
 
         if ((fd = open(argv[i], 0)) < 0) {
@@ -170,8 +186,15 @@ int main(int argc, char* argv[])
         if (argv[i][0] == '_')
             ++argv[i];
 
-        inum = ialloc(T_FILE);
+        if (strcmp("sh", argv[i]) == 0) {
+            hasSh = 1;
+        }
 
+        if (strcmp("init", argv[i]) == 0) {
+            hasInit = 1;
+        }
+        inum = ialloc(T_FILE);
+        printf("appending %s \n",argv[i]);
         bzero(&de, sizeof(de));
         de.inum = xshort(inum);
         strncpy(de.name, argv[i], DIRSIZ);
@@ -181,8 +204,9 @@ int main(int argc, char* argv[])
             iappend(inum, buf, cc);
 
         close(fd);
-    }
+            printf("finished appending \n");
 
+    }
     // fix size of root inode dir
     rinode(rootino, &din);
     off = xint(din.size);
@@ -191,6 +215,22 @@ int main(int argc, char* argv[])
     winode(rootino, &din);
 
     balloc(freeblock);
+
+    if (hasInit && hasSh) {
+        mbrI.partitions[0].flags = PART_BOOTABLE;
+    } else {
+        mbrI.partitions[0].flags = PART_ALLOCATED;
+    }
+    // write MBR
+    memset(buf, 0, sizeof(buf));
+    memmove(buf, &mbrI, sizeof(struct mbr));
+    wsect(0, buf);
+
+    // read and print MBR
+    memset(buf, 0, sizeof(buf));
+    readmbr(buf);
+    struct mbr* rmbr = (struct mbr*)buf;
+    printMBR(rmbr);
 
     exit(0);
 }
@@ -267,13 +307,13 @@ void printMBR(struct mbr* m)
         } else {
             bootable = "NO";
         }
-        
-        if (m->partitions[i].type >= 0 && m->partitions[i].type < NELEM(FS_TYPE) &&
-            FS_TYPE[m->partitions[i].type]) {
+
+        if (m->partitions[i].type >= 0 && m->partitions[i].type < NELEM(FS_TYPE) && FS_TYPE[m->partitions[i].type]) {
             type = FS_TYPE[m->partitions[i].type];
 
         } else {
             type = "???";
+            printf("unknown type %d \n", m->partitions[i].type);
         }
 
         printf("partition %d: bootable %s type %s offset %d size %d \n",

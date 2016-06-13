@@ -2,7 +2,7 @@
 000008d6 .rodata
 00000900 .eh_frame
 00000b48 .data
-00000b5c .bss
+00000b60 .bss
 00000000 .comment
 00000000 .debug_aranges
 00000000 .debug_info
@@ -18,10 +18,11 @@
 0000046c printint
 00000b48 digits.1107
 00000000 umalloc.c
-00000b5c base
-00000b64 freep
+00000b60 base
+00000b68 freep
 00000793 morecore
 00000178 strcpy
+00000b80 sbs
 00000520 printf
 00000364 memmove
 000003f1 mknod
@@ -45,10 +46,11 @@
 0000020e memset
 00000000 main
 000001a8 strcmp
+00000c00 partitions
 00000421 dup
 000002ca stat
 00000b59 _edata
-00000b68 _end
+00000c60 _end
 00000409 link
 000003a9 exit
 00000317 atoi

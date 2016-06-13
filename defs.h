@@ -34,10 +34,10 @@ int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
 
 // fs.c
-void            readsb(int dev, struct superblock *sb);
+void            readsb(int dev,int partitionNumber);
 int             dirlink(struct inode*, char*, uint);
 struct inode*   dirlookup(struct inode*, char*, uint*);
-struct inode*   ialloc(uint, short);
+struct inode*   ialloc(uint, short,int partitionNumber);
 struct inode*   idup(struct inode*);
 void            iinit(int dev);
 void            ilock(struct inode*);
@@ -81,7 +81,7 @@ void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
-void            initlog(int dev);
+void            initlog(int dev,int partitionNumber);
 void            log_write(struct buf*);
 void            begin_op();
 void            end_op();

@@ -340,7 +340,7 @@ forkret(void)
     // be run from main().
     first = 0;
     iinit(ROOTDEV);
-    initlog(ROOTDEV);
+    initlog(ROOTDEV,0);
   }
   
   // Return to "caller", actually trapret (see allocproc).

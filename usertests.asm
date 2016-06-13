@@ -545,7 +545,7 @@ writetest(void)
   i = read(fd, buf, 2000);
      4f4:	83 ec 04             	sub    $0x4,%esp
      4f7:	68 d0 07 00 00       	push   $0x7d0
-     4fc:	68 a0 8a 00 00       	push   $0x8aa0
+     4fc:	68 80 8b 00 00       	push   $0x8b80
      501:	ff 75 f0             	pushl  -0x10(%ebp)
      504:	e8 de 39 00 00       	call   3ee7 <read>
      509:	83 c4 10             	add    $0x10,%esp
@@ -679,13 +679,13 @@ writetest1(void)
      613:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
      61a:	eb 4b                	jmp    667 <writetest1+0xa9>
     ((int*)buf)[0] = i;
-     61c:	ba a0 8a 00 00       	mov    $0x8aa0,%edx
+     61c:	ba 80 8b 00 00       	mov    $0x8b80,%edx
      621:	8b 45 f4             	mov    -0xc(%ebp),%eax
      624:	89 02                	mov    %eax,(%edx)
     if(write(fd, buf, 512) != 512){
      626:	83 ec 04             	sub    $0x4,%esp
      629:	68 00 02 00 00       	push   $0x200
-     62e:	68 a0 8a 00 00       	push   $0x8aa0
+     62e:	68 80 8b 00 00       	push   $0x8b80
      633:	ff 75 ec             	pushl  -0x14(%ebp)
      636:	e8 b4 38 00 00       	call   3eef <write>
      63b:	83 c4 10             	add    $0x10,%esp
@@ -749,7 +749,7 @@ writetest1(void)
     i = read(fd, buf, 512);
      6bc:	83 ec 04             	sub    $0x4,%esp
      6bf:	68 00 02 00 00       	push   $0x200
-     6c4:	68 a0 8a 00 00       	push   $0x8aa0
+     6c4:	68 80 8b 00 00       	push   $0x8b80
      6c9:	ff 75 ec             	pushl  -0x14(%ebp)
      6cc:	e8 16 38 00 00       	call   3ee7 <read>
      6d1:	83 c4 10             	add    $0x10,%esp
@@ -787,13 +787,13 @@ writetest1(void)
      726:	e8 a4 37 00 00       	call   3ecf <exit>
     }
     if(((int*)buf)[0] != n){
-     72b:	b8 a0 8a 00 00       	mov    $0x8aa0,%eax
+     72b:	b8 80 8b 00 00       	mov    $0x8b80,%eax
      730:	8b 00                	mov    (%eax),%eax
      732:	3b 45 f0             	cmp    -0x10(%ebp),%eax
      735:	74 23                	je     75a <writetest1+0x19c>
       printf(stdout, "read content of block %d is %d\n",
              n, ((int*)buf)[0]);
-     737:	b8 a0 8a 00 00       	mov    $0x8aa0,%eax
+     737:	b8 80 8b 00 00       	mov    $0x8b80,%eax
     } else if(i != 512){
       printf(stdout, "read failed %d\n", i);
       exit();
@@ -881,20 +881,20 @@ createtest(void)
      7d3:	83 c4 10             	add    $0x10,%esp
 
   name[0] = 'a';
-     7d6:	c6 05 a0 aa 00 00 61 	movb   $0x61,0xaaa0
+     7d6:	c6 05 80 ab 00 00 61 	movb   $0x61,0xab80
   name[2] = '\0';
-     7dd:	c6 05 a2 aa 00 00 00 	movb   $0x0,0xaaa2
+     7dd:	c6 05 82 ab 00 00 00 	movb   $0x0,0xab82
   for(i = 0; i < 52; i++){
      7e4:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
      7eb:	eb 35                	jmp    822 <createtest+0x68>
     name[1] = '0' + i;
      7ed:	8b 45 f4             	mov    -0xc(%ebp),%eax
      7f0:	83 c0 30             	add    $0x30,%eax
-     7f3:	a2 a1 aa 00 00       	mov    %al,0xaaa1
+     7f3:	a2 81 ab 00 00       	mov    %al,0xab81
     fd = open(name, O_CREATE|O_RDWR);
      7f8:	83 ec 08             	sub    $0x8,%esp
      7fb:	68 02 02 00 00       	push   $0x202
-     800:	68 a0 aa 00 00       	push   $0xaaa0
+     800:	68 80 ab 00 00       	push   $0xab80
      805:	e8 05 37 00 00       	call   3f0f <open>
      80a:	83 c4 10             	add    $0x10,%esp
      80d:	89 45 f0             	mov    %eax,-0x10(%ebp)
@@ -917,19 +917,19 @@ createtest(void)
     close(fd);
   }
   name[0] = 'a';
-     828:	c6 05 a0 aa 00 00 61 	movb   $0x61,0xaaa0
+     828:	c6 05 80 ab 00 00 61 	movb   $0x61,0xab80
   name[2] = '\0';
-     82f:	c6 05 a2 aa 00 00 00 	movb   $0x0,0xaaa2
+     82f:	c6 05 82 ab 00 00 00 	movb   $0x0,0xab82
   for(i = 0; i < 52; i++){
      836:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
      83d:	eb 1f                	jmp    85e <createtest+0xa4>
     name[1] = '0' + i;
      83f:	8b 45 f4             	mov    -0xc(%ebp),%eax
      842:	83 c0 30             	add    $0x30,%eax
-     845:	a2 a1 aa 00 00       	mov    %al,0xaaa1
+     845:	a2 81 ab 00 00       	mov    %al,0xab81
     unlink(name);
      84a:	83 ec 0c             	sub    $0xc,%esp
-     84d:	68 a0 aa 00 00       	push   $0xaaa0
+     84d:	68 80 ab 00 00       	push   $0xab80
      852:	e8 c8 36 00 00       	call   3f1f <unlink>
      857:	83 c4 10             	add    $0x10,%esp
     fd = open(name, O_CREATE|O_RDWR);
@@ -1148,7 +1148,7 @@ pipe1(void)
      a31:	89 55 f4             	mov    %edx,-0xc(%ebp)
      a34:	89 c2                	mov    %eax,%edx
      a36:	8b 45 f0             	mov    -0x10(%ebp),%eax
-     a39:	05 a0 8a 00 00       	add    $0x8aa0,%eax
+     a39:	05 80 8b 00 00       	add    $0x8b80,%eax
      a3e:	88 10                	mov    %dl,(%eax)
   pid = fork();
   seq = 0;
@@ -1164,7 +1164,7 @@ pipe1(void)
      a4d:	8b 45 dc             	mov    -0x24(%ebp),%eax
      a50:	83 ec 04             	sub    $0x4,%esp
      a53:	68 09 04 00 00       	push   $0x409
-     a58:	68 a0 8a 00 00       	push   $0x8aa0
+     a58:	68 80 8b 00 00       	push   $0x8b80
      a5d:	50                   	push   %eax
      a5e:	e8 8c 34 00 00       	call   3eef <write>
      a63:	83 c4 10             	add    $0x10,%esp
@@ -1214,7 +1214,7 @@ pipe1(void)
      ac3:	eb 3b                	jmp    b00 <pipe1+0x13f>
         if((buf[i] & 0xff) != (seq++ & 0xff)){
      ac5:	8b 45 f0             	mov    -0x10(%ebp),%eax
-     ac8:	05 a0 8a 00 00       	add    $0x8aa0,%eax
+     ac8:	05 80 8b 00 00       	add    $0x8b80,%eax
      acd:	0f b6 00             	movzbl (%eax),%eax
      ad0:	0f be c8             	movsbl %al,%ecx
      ad3:	8b 45 f4             	mov    -0xc(%ebp),%eax
@@ -1266,7 +1266,7 @@ pipe1(void)
      b22:	8b 45 d8             	mov    -0x28(%ebp),%eax
      b25:	83 ec 04             	sub    $0x4,%esp
      b28:	ff 75 e8             	pushl  -0x18(%ebp)
-     b2b:	68 a0 8a 00 00       	push   $0x8aa0
+     b2b:	68 80 8b 00 00       	push   $0x8b80
      b30:	50                   	push   %eax
      b31:	e8 b1 33 00 00       	call   3ee7 <read>
      b36:	83 c4 10             	add    $0x10,%esp
@@ -1422,7 +1422,7 @@ preempt(void)
      c5b:	8b 45 e4             	mov    -0x1c(%ebp),%eax
      c5e:	83 ec 04             	sub    $0x4,%esp
      c61:	68 00 20 00 00       	push   $0x2000
-     c66:	68 a0 8a 00 00       	push   $0x8aa0
+     c66:	68 80 8b 00 00       	push   $0x8b80
      c6b:	50                   	push   %eax
      c6c:	e8 76 32 00 00       	call   3ee7 <read>
      c71:	83 c4 10             	add    $0x10,%esp
@@ -1986,7 +1986,7 @@ fourfiles(void)
     1119:	83 ec 04             	sub    $0x4,%esp
     111c:	68 00 02 00 00       	push   $0x200
     1121:	50                   	push   %eax
-    1122:	68 a0 8a 00 00       	push   $0x8aa0
+    1122:	68 80 8b 00 00       	push   $0x8b80
     1127:	e8 08 2c 00 00       	call   3d34 <memset>
     112c:	83 c4 10             	add    $0x10,%esp
       for(i = 0; i < 12; i++){
@@ -1995,7 +1995,7 @@ fourfiles(void)
         if((n = write(fd, buf, 500)) != 500){
     1138:	83 ec 04             	sub    $0x4,%esp
     113b:	68 f4 01 00 00       	push   $0x1f4
-    1140:	68 a0 8a 00 00       	push   $0x8aa0
+    1140:	68 80 8b 00 00       	push   $0x8b80
     1145:	ff 75 dc             	pushl  -0x24(%ebp)
     1148:	e8 a2 2d 00 00       	call   3eef <write>
     114d:	83 c4 10             	add    $0x10,%esp
@@ -2081,7 +2081,7 @@ fourfiles(void)
     11e4:	eb 33                	jmp    1219 <fourfiles+0x1c0>
         if(buf[j] != '0'+i){
     11e6:	8b 45 f0             	mov    -0x10(%ebp),%eax
-    11e9:	05 a0 8a 00 00       	add    $0x8aa0,%eax
+    11e9:	05 80 8b 00 00       	add    $0x8b80,%eax
     11ee:	0f b6 00             	movzbl (%eax),%eax
     11f1:	0f be c0             	movsbl %al,%eax
     11f4:	8b 55 f4             	mov    -0xc(%ebp),%edx
@@ -2122,7 +2122,7 @@ fourfiles(void)
     while((n = read(fd, buf, sizeof(buf))) > 0){
     1227:	83 ec 04             	sub    $0x4,%esp
     122a:	68 00 20 00 00       	push   $0x2000
-    122f:	68 a0 8a 00 00       	push   $0x8aa0
+    122f:	68 80 8b 00 00       	push   $0x8b80
     1234:	ff 75 dc             	pushl  -0x24(%ebp)
     1237:	e8 ab 2c 00 00       	call   3ee7 <read>
     123c:	83 c4 10             	add    $0x10,%esp
@@ -2596,7 +2596,7 @@ unlinkread(void)
   if(read(fd, buf, sizeof(buf)) != 5){
     1624:	83 ec 04             	sub    $0x4,%esp
     1627:	68 00 20 00 00       	push   $0x2000
-    162c:	68 a0 8a 00 00       	push   $0x8aa0
+    162c:	68 80 8b 00 00       	push   $0x8b80
     1631:	ff 75 f4             	pushl  -0xc(%ebp)
     1634:	e8 ae 28 00 00       	call   3ee7 <read>
     1639:	83 c4 10             	add    $0x10,%esp
@@ -2612,7 +2612,7 @@ unlinkread(void)
     1653:	e8 77 28 00 00       	call   3ecf <exit>
   }
   if(buf[0] != 'h'){
-    1658:	0f b6 05 a0 8a 00 00 	movzbl 0x8aa0,%eax
+    1658:	0f b6 05 80 8b 00 00 	movzbl 0x8b80,%eax
     165f:	3c 68                	cmp    $0x68,%al
     1661:	74 17                	je     167a <unlinkread+0x15e>
     printf(1, "unlinkread wrong data\n");
@@ -2627,7 +2627,7 @@ unlinkread(void)
   if(write(fd, buf, 10) != 10){
     167a:	83 ec 04             	sub    $0x4,%esp
     167d:	6a 0a                	push   $0xa
-    167f:	68 a0 8a 00 00       	push   $0x8aa0
+    167f:	68 80 8b 00 00       	push   $0x8b80
     1684:	ff 75 f4             	pushl  -0xc(%ebp)
     1687:	e8 63 28 00 00       	call   3eef <write>
     168c:	83 c4 10             	add    $0x10,%esp
@@ -2797,7 +2797,7 @@ linktest(void)
   if(read(fd, buf, sizeof(buf)) != 5){
     1829:	83 ec 04             	sub    $0x4,%esp
     182c:	68 00 20 00 00       	push   $0x2000
-    1831:	68 a0 8a 00 00       	push   $0x8aa0
+    1831:	68 80 8b 00 00       	push   $0x8b80
     1836:	ff 75 f4             	pushl  -0xc(%ebp)
     1839:	e8 a9 26 00 00       	call   3ee7 <read>
     183e:	83 c4 10             	add    $0x10,%esp
@@ -3050,20 +3050,20 @@ concreate(void)
   while(read(fd, &de, sizeof(de)) > 0){
     1a81:	e9 93 00 00 00       	jmp    1b19 <concreate+0x1f9>
     if(de.inum == 0)
-    1a86:	0f b7 45 ac          	movzwl -0x54(%ebp),%eax
+    1a86:	0f b7 45 ad          	movzwl -0x53(%ebp),%eax
     1a8a:	66 85 c0             	test   %ax,%ax
     1a8d:	75 05                	jne    1a94 <concreate+0x174>
       continue;
     1a8f:	e9 85 00 00 00       	jmp    1b19 <concreate+0x1f9>
     if(de.name[0] == 'C' && de.name[2] == '\0'){
-    1a94:	0f b6 45 ae          	movzbl -0x52(%ebp),%eax
+    1a94:	0f b6 45 af          	movzbl -0x51(%ebp),%eax
     1a98:	3c 43                	cmp    $0x43,%al
     1a9a:	75 7d                	jne    1b19 <concreate+0x1f9>
-    1a9c:	0f b6 45 b0          	movzbl -0x50(%ebp),%eax
+    1a9c:	0f b6 45 b1          	movzbl -0x4f(%ebp),%eax
     1aa0:	84 c0                	test   %al,%al
     1aa2:	75 75                	jne    1b19 <concreate+0x1f9>
       i = de.name[1] - '0';
-    1aa4:	0f b6 45 af          	movzbl -0x51(%ebp),%eax
+    1aa4:	0f b6 45 b0          	movzbl -0x50(%ebp),%eax
     1aa8:	0f be c0             	movsbl %al,%eax
     1aab:	83 e8 30             	sub    $0x30,%eax
     1aae:	89 45 f4             	mov    %eax,-0xc(%ebp)
@@ -3075,7 +3075,7 @@ concreate(void)
     1abd:	76 1e                	jbe    1add <concreate+0x1bd>
         printf(1, "concreate weird file %s\n", de.name);
     1abf:	83 ec 04             	sub    $0x4,%esp
-    1ac2:	8d 45 ac             	lea    -0x54(%ebp),%eax
+    1ac2:	8d 45 ad             	lea    -0x53(%ebp),%eax
     1ac5:	83 c0 02             	add    $0x2,%eax
     1ac8:	50                   	push   %eax
     1ac9:	68 e1 4c 00 00       	push   $0x4ce1
@@ -3094,7 +3094,7 @@ concreate(void)
     1aea:	74 1e                	je     1b0a <concreate+0x1ea>
         printf(1, "concreate duplicate file %s\n", de.name);
     1aec:	83 ec 04             	sub    $0x4,%esp
-    1aef:	8d 45 ac             	lea    -0x54(%ebp),%eax
+    1aef:	8d 45 ad             	lea    -0x53(%ebp),%eax
     1af2:	83 c0 02             	add    $0x2,%eax
     1af5:	50                   	push   %eax
     1af6:	68 fa 4c 00 00       	push   $0x4cfa
@@ -3119,7 +3119,7 @@ concreate(void)
   while(read(fd, &de, sizeof(de)) > 0){
     1b19:	83 ec 04             	sub    $0x4,%esp
     1b1c:	6a 10                	push   $0x10
-    1b1e:	8d 45 ac             	lea    -0x54(%ebp),%eax
+    1b1e:	8d 45 ad             	lea    -0x53(%ebp),%eax
     1b21:	50                   	push   %eax
     1b22:	ff 75 e8             	pushl  -0x18(%ebp)
     1b25:	e8 bd 23 00 00       	call   3ee7 <read>
@@ -3792,7 +3792,7 @@ subdir(void)
   cc = read(fd, buf, sizeof(buf));
     2109:	83 ec 04             	sub    $0x4,%esp
     210c:	68 00 20 00 00       	push   $0x2000
-    2111:	68 a0 8a 00 00       	push   $0x8aa0
+    2111:	68 80 8b 00 00       	push   $0x8b80
     2116:	ff 75 f4             	pushl  -0xc(%ebp)
     2119:	e8 c9 1d 00 00       	call   3ee7 <read>
     211e:	83 c4 10             	add    $0x10,%esp
@@ -3800,7 +3800,7 @@ subdir(void)
   if(cc != 2 || buf[0] != 'f'){
     2124:	83 7d f0 02          	cmpl   $0x2,-0x10(%ebp)
     2128:	75 0b                	jne    2135 <subdir+0x1b7>
-    212a:	0f b6 05 a0 8a 00 00 	movzbl 0x8aa0,%eax
+    212a:	0f b6 05 80 8b 00 00 	movzbl 0x8b80,%eax
     2131:	3c 66                	cmp    $0x66,%al
     2133:	74 17                	je     214c <subdir+0x1ce>
     printf(1, "dd/dd/../ff wrong content\n");
@@ -3957,7 +3957,7 @@ subdir(void)
   if(read(fd, buf, sizeof(buf)) != 2){
     22c0:	83 ec 04             	sub    $0x4,%esp
     22c3:	68 00 20 00 00       	push   $0x2000
-    22c8:	68 a0 8a 00 00       	push   $0x8aa0
+    22c8:	68 80 8b 00 00       	push   $0x8b80
     22cd:	ff 75 f4             	pushl  -0xc(%ebp)
     22d0:	e8 12 1c 00 00       	call   3ee7 <read>
     22d5:	83 c4 10             	add    $0x10,%esp
@@ -4389,7 +4389,7 @@ bigwrite(void)
       int cc = write(fd, buf, sz);
     2734:	83 ec 04             	sub    $0x4,%esp
     2737:	ff 75 f4             	pushl  -0xc(%ebp)
-    273a:	68 a0 8a 00 00       	push   $0x8aa0
+    273a:	68 80 8b 00 00       	push   $0x8b80
     273f:	ff 75 ec             	pushl  -0x14(%ebp)
     2742:	e8 a8 17 00 00       	call   3eef <write>
     2747:	83 c4 10             	add    $0x10,%esp
@@ -4504,13 +4504,13 @@ bigfile(void)
     2826:	83 ec 04             	sub    $0x4,%esp
     2829:	68 58 02 00 00       	push   $0x258
     282e:	ff 75 f4             	pushl  -0xc(%ebp)
-    2831:	68 a0 8a 00 00       	push   $0x8aa0
+    2831:	68 80 8b 00 00       	push   $0x8b80
     2836:	e8 f9 14 00 00       	call   3d34 <memset>
     283b:	83 c4 10             	add    $0x10,%esp
     if(write(fd, buf, 600) != 600){
     283e:	83 ec 04             	sub    $0x4,%esp
     2841:	68 58 02 00 00       	push   $0x258
-    2846:	68 a0 8a 00 00       	push   $0x8aa0
+    2846:	68 80 8b 00 00       	push   $0x8b80
     284b:	ff 75 ec             	pushl  -0x14(%ebp)
     284e:	e8 9c 16 00 00       	call   3eef <write>
     2853:	83 c4 10             	add    $0x10,%esp
@@ -4570,7 +4570,7 @@ bigfile(void)
     cc = read(fd, buf, 300);
     28cc:	83 ec 04             	sub    $0x4,%esp
     28cf:	68 2c 01 00 00       	push   $0x12c
-    28d4:	68 a0 8a 00 00       	push   $0x8aa0
+    28d4:	68 80 8b 00 00       	push   $0x8b80
     28d9:	ff 75 ec             	pushl  -0x14(%ebp)
     28dc:	e8 06 16 00 00       	call   3ee7 <read>
     28e1:	83 c4 10             	add    $0x10,%esp
@@ -4604,7 +4604,7 @@ bigfile(void)
     2925:	e8 a5 15 00 00       	call   3ecf <exit>
     }
     if(buf[0] != i/2 || buf[299] != i/2){
-    292a:	0f b6 05 a0 8a 00 00 	movzbl 0x8aa0,%eax
+    292a:	0f b6 05 80 8b 00 00 	movzbl 0x8b80,%eax
     2931:	0f be d0             	movsbl %al,%edx
     2934:	8b 45 f4             	mov    -0xc(%ebp),%eax
     2937:	89 c1                	mov    %eax,%ecx
@@ -4613,7 +4613,7 @@ bigfile(void)
     293e:	d1 f8                	sar    %eax
     2940:	39 c2                	cmp    %eax,%edx
     2942:	75 1a                	jne    295e <bigfile+0x19e>
-    2944:	0f b6 05 cb 8b 00 00 	movzbl 0x8bcb,%eax
+    2944:	0f b6 05 ab 8c 00 00 	movzbl 0x8cab,%eax
     294b:	0f be d0             	movsbl %al,%edx
     294e:	8b 45 f4             	mov    -0xc(%ebp),%eax
     2951:	89 c1                	mov    %eax,%ecx
@@ -6172,7 +6172,7 @@ bsstest(void)
     3708:	eb 2e                	jmp    3738 <bsstest+0x53>
     if(uninit[i] != '\0'){
     370a:	8b 45 f4             	mov    -0xc(%ebp),%eax
-    370d:	05 80 63 00 00       	add    $0x6380,%eax
+    370d:	05 00 64 00 00       	add    $0x6400,%eax
     3712:	0f b6 00             	movzbl (%eax),%eax
     3715:	84 c0                	test   %al,%al
     3717:	74 1b                	je     3734 <bsstest+0x4f>
@@ -6482,7 +6482,7 @@ fsfull()
       int cc = write(fd, buf, 512);
     39d8:	83 ec 04             	sub    $0x4,%esp
     39db:	68 00 02 00 00       	push   $0x200
-    39e0:	68 a0 8a 00 00       	push   $0x8aa0
+    39e0:	68 80 8b 00 00       	push   $0x8b80
     39e5:	ff 75 e8             	pushl  -0x18(%ebp)
     39e8:	e8 02 05 00 00       	call   3eef <write>
     39ed:	83 c4 10             	add    $0x10,%esp
