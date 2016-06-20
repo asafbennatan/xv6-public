@@ -56,7 +56,7 @@ initlog(int dev,int partitionNumber)
     panic("initlog: too big logheader");
 
   initlock(&log.lock, "log");
-  readsb(dev, partitionNumber);
+ // readsb(dev, partitionNumber);
   log.start = sbs[partitionNumber].offset+sbs[partitionNumber].logstart;
   log.size =  sbs[partitionNumber].nlog;
   log.dev = dev;

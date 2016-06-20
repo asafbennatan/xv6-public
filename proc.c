@@ -12,6 +12,8 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+
+
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -98,6 +100,10 @@ userinit(void)
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
+
+  
+ // cprintf("userinit-root inode addr %d \n",p->cwd);
+  
 
   p->state = RUNNABLE;
 }
@@ -283,6 +289,7 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
+     // cprintf("selected %s \n",p->chan);
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
@@ -305,7 +312,7 @@ sched(void)
   if(!holding(&ptable.lock))
     panic("sched ptable.lock");
   if(cpu->ncli != 1)
-    panic("sched locks");
+   panic("sched locks");
   if(proc->state == RUNNING)
     panic("sched running");
   if(readeflags()&FL_IF)
@@ -331,17 +338,29 @@ void
 forkret(void)
 {
   static int first = 1;
+ // static int iinitDone=0;
   // Still holding ptable.lock from scheduler.
   release(&ptable.lock);
+
 
   if (first) {
     // Some initialization functions must be run in the context
     // of a regular process (e.g., they call sleep), and thus cannot 
     // be run from main().
     first = 0;
-    iinit(ROOTDEV);
-    initlog(ROOTDEV,0);
+    cprintf("cpu %d iinit \n",cpu->id);
+    int bootfrom=iinit(proc,ROOTDEV);
+    // iinitDone=1;
+    cprintf("boot from after iinit is %d \n",bootfrom);
+    initlog(ROOTDEV,bootfrom);
+   
+    //cprintf("after initlog \n");
   }
+ // while(iinitDone<1){
+      //cprintf("cpu waiting \n");
+ // }
+
+ 
   
   // Return to "caller", actually trapret (see allocproc).
 }

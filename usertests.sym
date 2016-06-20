@@ -12,7 +12,7 @@
 00000000 .debug_loc
 00000000 .debug_ranges
 00000000 usertests.c
-000062e0 args.1497
+000062e0 args.1496
 00000000 ulib.c
 00003c78 stosb
 00000000 printf.c

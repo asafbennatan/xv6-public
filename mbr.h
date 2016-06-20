@@ -12,7 +12,6 @@ struct dpartition {
 	uint type;	
 	uint offset;
 	uint size;
-    uint number;
 };
 
 #pragma pack(1)				// prevents the compiler from aligning (padding) generated code for 4 byte boundary

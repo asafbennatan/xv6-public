@@ -39,7 +39,7 @@ int             dirlink(struct inode*, char*, uint);
 struct inode*   dirlookup(struct inode*, char*, uint*);
 struct inode*   ialloc(uint, short,int partitionNumber);
 struct inode*   idup(struct inode*);
-void            iinit(int dev);
+int            iinit(struct proc *p,int dev);
 void            ilock(struct inode*);
 void            iput(struct inode*);
 void            iunlock(struct inode*);
@@ -51,6 +51,7 @@ struct inode*   nameiparent(char*, char*);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
+void initMbr(int dev);
 
 // ide.c
 void            ideinit(void);

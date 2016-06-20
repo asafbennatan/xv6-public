@@ -22,7 +22,7 @@ main(void)
   mpinit();        // collect info about this machine
   lapicinit();
   seginit();       // set up segments
-  cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
+ // cprintf("\ncpu%d: starting xv6\n\n", cpu->id);
   picinit();       // interrupt controller
   ioapicinit();    // another interrupt controller
   consoleinit();   // I/O devices & their interrupts
@@ -30,15 +30,27 @@ main(void)
   pinit();         // process table
   tvinit();        // trap vectors
   binit();         // buffer cache
+ // cprintf("after b cache");
   fileinit();      // file table
+  //  cprintf("after f init");
+
   ideinit();       // disk
+   //   cprintf("after ide init");
+
   if(!ismp)
     timerinit();   // uniprocessor timer
-  startothers();   // start other processors
+  //  int a=3;
+ //   if(a==4)
+ startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
+
   userinit();      // first user process
   // Finish setting up this processor in mpmain.
+
   mpmain();
+            //  cprintf("after mp main");
+
+
 }
 
 // Other CPUs jump here from entryother.S.

@@ -12,9 +12,13 @@ main(void)
 {
   int pid, wpid;
 
+printf(1,"before open \n");
   if(open("console", O_RDWR) < 0){
+   //  printf(1,"after open \n");
     mknod("console", 1, 1);
+   // printf(1,"after mknod \n");
     open("console", O_RDWR);
+   // printf(1,"after open 2\n");
   }
   dup(0);  // stdout
   dup(0);  // stderr

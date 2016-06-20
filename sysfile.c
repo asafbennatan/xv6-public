@@ -241,10 +241,11 @@ create(char *path, short type, short major, short minor)
   uint off;
   struct inode *ip, *dp;
   char name[DIRSIZ];
-
+//cprintf("path %d  \n",path);
   if((dp = nameiparent(path, name)) == 0)
     return 0;
   ilock(dp);
+  
 
   if((ip = dirlookup(dp, name, &off)) != 0){
     iunlockput(dp);
@@ -254,7 +255,6 @@ create(char *path, short type, short major, short minor)
     iunlockput(ip);
     return 0;
   }
-
   if((ip = ialloc(dp->dev, type,dp->part->number)) == 0)
     panic("create: ialloc");
 

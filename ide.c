@@ -73,8 +73,11 @@ idestart(struct buf *b)
 {
   if(b == 0)
     panic("idestart");
-  if(b->blockno >= FSSIZE)
-    panic("incorrect blockno");
+  if(b->blockno >= FSSIZE){
+      cprintf("block %d \n");
+          panic("incorrect blockno");
+
+  }
   int sector_per_block =  BSIZE/SECTOR_SIZE;
   int sector = b->blockno * sector_per_block;
 
@@ -120,8 +123,12 @@ ideintr(void)
   wakeup(b);
   
   // Start disk on next buf in queue.
-  if(idequeue != 0)
-    idestart(idequeue);
+  if(idequeue != 0){
+            cprintf("ideintr \n");
+                idestart(idequeue);
+
+
+  }
 
   release(&idelock);
 }
@@ -151,8 +158,11 @@ iderw(struct buf *b)
   *pp = b;
   
   // Start disk if necessary.
-  if(idequeue == b)
-    idestart(b);
+  if(idequeue == b){
+     // cprintf("iderw \n");
+          idestart(b);
+
+  }
   
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID){

@@ -23,7 +23,10 @@ exec(char *path, char **argv)
     end_op();
     return -1;
   }
+           // cprintf("exec \n");
+
   ilock(ip);
+
   pgdir = 0;
 
   // Check ELF header

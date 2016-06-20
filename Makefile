@@ -184,6 +184,14 @@ clean:
 	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
 	.gdbinit \
 	$(UPROGS)
+	
+	
+#clean: 
+#	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
+#	*.o *.d *.asm *.sym vectors.S bootblock entryother \
+#	initcode initcode.out kernel xv6.img  kernelmemfs mkfs \
+#	.gdbinit \
+#	$(UPROGS)
     
 # make a printout
 FILES = $(shell grep -v '^\#' runoff.list)
@@ -212,7 +220,7 @@ CPUS := 2
 endif
 QEMUOPTS = -hda fs.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: fs.img xv6.img
+qemu: fs.img 
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 qemu-memfs: xv6memfs.img
@@ -224,7 +232,7 @@ qemu-nox: fs.img xv6.img
 .gdbinit: .gdbinit.tmpl
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
-qemu-gdb: fs.img xv6.img .gdbinit
+qemu-gdb: fs.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
 

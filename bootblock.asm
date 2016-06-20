@@ -301,7 +301,7 @@ bootmain(void)
     7d3f:	56                   	push   %esi
     7d40:	53                   	push   %ebx
     7d41:	83 ec 0c             	sub    $0xc,%esp
-  uchar* pa;
+
 
   elf = (struct elfhdr*)0x10000;  // scratch space
 
