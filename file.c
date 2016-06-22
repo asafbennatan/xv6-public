@@ -9,6 +9,7 @@
 #include "file.h"
 #include "spinlock.h"
 
+
 struct devsw devsw[NDEV];
 struct {
   struct spinlock lock;
@@ -72,9 +73,9 @@ fileclose(struct file *f)
   if(ff.type == FD_PIPE)
     pipeclose(ff.pipe, ff.writable);
   else if(ff.type == FD_INODE){
-    begin_op();
+    begin_op(f->ip->part->number);
     iput(ff.ip);
-    end_op();
+    end_op(f->ip->part->number);
   }
 }
 
@@ -141,14 +142,14 @@ filewrite(struct file *f, char *addr, int n)
       if(n1 > max)
         n1 = max;
 
-      begin_op();
+      begin_op(f->ip->part->number);
       ilock(f->ip);
       if ((r = writei(f->ip, addr + i, f->off, n1)) > 0)
         f->off += r;
        // cprintf("filewrite \n");
 
       iunlock(f->ip);
-      end_op();
+      end_op(f->ip->part->number);
 
       if(r < 0)
         break;

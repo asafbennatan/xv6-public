@@ -48,6 +48,7 @@ void            iupdate(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);
+struct inode* nameiIgnoreMounts(char* path);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
@@ -82,10 +83,10 @@ void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
-void            initlog(int dev,int partitionNumber);
-void            log_write(struct buf*);
-void            begin_op();
-void            end_op();
+void            initlog(int dev);
+void            log_write(struct buf*,uint partitionNumber);
+void            begin_op(uint partitionNumber);
+void            end_op(uint partitionNumber);
 
 // mp.c
 extern int      ismp;
@@ -148,6 +149,8 @@ int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 void            syscall(void);
+
+int openFile(char* path, int omode);
 
 // timer.c
 void            timerinit(void);

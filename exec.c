@@ -6,6 +6,23 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
+#include "mbr.h"
+#define NDIRECT 12
+
+struct inode {
+  uint dev;           // Device number
+  uint inum;          // Inode number
+  int ref;            // Reference count
+  int flags;          // I_BUSY, I_VALID
+
+  short type;         // copy of disk inode
+  short major;
+  short minor;
+  short nlink;
+  uint size;
+  uint addrs[NDIRECT+1];
+  struct partition *part;  //partition
+};
 
 int
 exec(char *path, char **argv)
@@ -18,9 +35,9 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
 
-  begin_op();
+  begin_op(proc->cwd->part->number);
   if((ip = namei(path)) == 0){
-    end_op();
+    end_op(proc->cwd->part->number);
     return -1;
   }
            // cprintf("exec \n");
@@ -53,7 +70,7 @@ exec(char *path, char **argv)
       goto bad;
   }
   iunlockput(ip);
-  end_op();
+  end_op(proc->cwd->part->number);
   ip = 0;
 
   // Allocate two pages at the next page boundary.
@@ -104,7 +121,7 @@ exec(char *path, char **argv)
     freevm(pgdir);
   if(ip){
     iunlockput(ip);
-    end_op();
+    end_op(proc->cwd->part->number);
   }
   return -1;
 }

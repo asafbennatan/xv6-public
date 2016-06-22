@@ -42,7 +42,7 @@ forktest(void)
 
   printf(1, "fork test\n");
   2f:	83 ec 08             	sub    $0x8,%esp
-  32:	68 0c 04 00 00       	push   $0x40c
+  32:	68 14 04 00 00       	push   $0x414
   37:	6a 01                	push   $0x1
   39:	e8 c2 ff ff ff       	call   0 <printf>
   3e:	83 c4 10             	add    $0x10,%esp
@@ -86,7 +86,7 @@ forktest(void)
     printf(1, "fork claimed to work N times!\n", N);
   7c:	83 ec 04             	sub    $0x4,%esp
   7f:	68 e8 03 00 00       	push   $0x3e8
-  84:	68 18 04 00 00       	push   $0x418
+  84:	68 20 04 00 00       	push   $0x420
   89:	6a 01                	push   $0x1
   8b:	e8 70 ff ff ff       	call   0 <printf>
   90:	83 c4 10             	add    $0x10,%esp
@@ -101,7 +101,7 @@ forktest(void)
   9f:	79 17                	jns    b8 <forktest+0x8f>
       printf(1, "wait stopped early\n");
   a1:	83 ec 08             	sub    $0x8,%esp
-  a4:	68 37 04 00 00       	push   $0x437
+  a4:	68 3f 04 00 00       	push   $0x43f
   a9:	6a 01                	push   $0x1
   ab:	e8 50 ff ff ff       	call   0 <printf>
   b0:	83 c4 10             	add    $0x10,%esp
@@ -127,7 +127,7 @@ forktest(void)
   ca:	74 17                	je     e3 <forktest+0xba>
     printf(1, "wait got too many\n");
   cc:	83 ec 08             	sub    $0x8,%esp
-  cf:	68 4b 04 00 00       	push   $0x44b
+  cf:	68 53 04 00 00       	push   $0x453
   d4:	6a 01                	push   $0x1
   d6:	e8 25 ff ff ff       	call   0 <printf>
   db:	83 c4 10             	add    $0x10,%esp
@@ -137,7 +137,7 @@ forktest(void)
   
   printf(1, "fork test OK\n");
   e3:	83 ec 08             	sub    $0x8,%esp
-  e6:	68 5e 04 00 00       	push   $0x45e
+  e6:	68 66 04 00 00       	push   $0x466
   eb:	6a 01                	push   $0x1
   ed:	e8 0e ff ff ff       	call   0 <printf>
   f2:	83 c4 10             	add    $0x10,%esp
@@ -700,3 +700,9 @@ SYSCALL(uptime)
  402:	b8 0e 00 00 00       	mov    $0xe,%eax
  407:	cd 40                	int    $0x40
  409:	c3                   	ret    
+
+0000040a <mount>:
+SYSCALL(mount)
+ 40a:	b8 16 00 00 00       	mov    $0x16,%eax
+ 40f:	cd 40                	int    $0x40
+ 411:	c3                   	ret    

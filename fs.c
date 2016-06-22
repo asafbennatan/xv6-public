@@ -25,6 +25,7 @@ static void itrunc(struct inode*);
 struct mbr mbrI;
 int bootfrom = -1;
 int currentPart = -1;
+struct file * fstabFd;
 
 // Read the super block.
 void readsb(int dev, int partitionNumber)
@@ -47,15 +48,18 @@ void readmbr(int dev)
 }
 
 // Zero a block.
-static void bzero(int dev, int bno)
+static void bzero(int dev, int bno,uint partitionNumber)
 {
     struct buf* bp;
 
     bp = bread(dev, bno);
     memset(bp->data, 0, BSIZE);
-    log_write(bp);
+    log_write(bp,partitionNumber);
     brelse(bp);
 }
+
+
+
 
 // Blocks.
 
@@ -75,9 +79,9 @@ static uint balloc(uint dev, int partitionNumber)
             m = 1 << (bi % 8);
             if ((bp->data[bi / 8] & m) == 0) { // Is block free?
                 bp->data[bi / 8] |= m;         // Mark block in use.
-                log_write(bp);
+                log_write(bp,partitionNumber);
                 brelse(bp);
-                bzero(dev, sb.offset +b + bi);
+                bzero(dev, sb.offset +b + bi,partitionNumber);
                 return b + bi;
             }
         }
@@ -101,7 +105,7 @@ static void bfree(int dev, uint b, int partitionNumber)
     if ((bp->data[bi / 8] & m) == 0)
         panic("freeing free block");
     bp->data[bi / 8] &= ~m;
-    log_write(bp);
+    log_write(bp,partitionNumber);
     brelse(bp);
 }
 
@@ -227,6 +231,9 @@ void initMbr(int dev)
         partitions[i].offset = mbrI.partitions[i].offset;
         partitions[i].size = mbrI.partitions[i].size;
     }
+
+
+    
 }
 
 int iinit(struct proc* p, int dev)
@@ -263,6 +270,8 @@ int iinit(struct proc* p, int dev)
             sb.logstart,
             sb.inodestart,
             sb.bmapstart);
+            
+    
             return bootfrom;
 }
 
@@ -287,7 +296,7 @@ struct inode* ialloc(uint dev, short type, int partitionNumber)
         if (dip->type == 0) { // a free inode
             memset(dip, 0, sizeof(*dip));
             dip->type = type;
-            log_write(bp); // mark it allocated on the disk
+            log_write(bp,partitionNumber); // mark it allocated on the disk
             brelse(bp);
             return iget(dev, inum, partitionNumber);
         }
@@ -315,7 +324,7 @@ void iupdate(struct inode* ip)
     dip->nlink = ip->nlink;
     dip->size = ip->size;
     memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
-    log_write(bp);
+    log_write(bp,ip->part->number);
     brelse(bp);
 }
 
@@ -490,7 +499,7 @@ sb=sbs[ip->part->number];
         a = (uint*)bp->data;
         if ((addr = a[bn]) == 0) {
             a[bn] = addr = balloc(ip->dev, ip->part->number);
-            log_write(bp);
+            log_write(bp,ip->part->number);
         }
         brelse(bp);
         return addr;
@@ -605,7 +614,7 @@ int writei(struct inode* ip, char* src, uint off, uint n)
         bp = bread(ip->dev, sb.offset+bmapOut);
         m = min(n - tot, BSIZE - off % BSIZE);
         memmove(bp->data + off % BSIZE, src, m);
-        log_write(bp);
+        log_write(bp,ip->part->number);
         brelse(bp);
     }
 
@@ -728,7 +737,7 @@ static char* skipelem(char* path, char* name)
 // If parent != 0, return the inode for the parent and copy the final
 // path element into name, which must have room for DIRSIZ bytes.
 // Must be called inside a transaction since it calls iput().
-static struct inode* namex(char* path, int nameiparent, char* name)
+static struct inode* namex(char* path, int nameiparent, int ignoreMounts,char* name)
 {
                                            // cprintf("namex \n");
 
@@ -758,6 +767,17 @@ static struct inode* namex(char* path, int nameiparent, char* name)
             return 0;
         }
         iunlockput(ip);
+        //testing 
+        if(!ignoreMounts&&next->type==T_DIR&&next->major!=0 && next->major!=MOUNTING_POINT){
+            cprintf("major used ,we are fucked \n");
+        }
+        //handle mounting points
+        if(!ignoreMounts&&!nameiparent&&next->type==T_DIR&&next->major==MOUNTING_POINT){
+            
+            
+            uint partitionNumnber=next->minor;
+            return iget(ROOTDEV,1,partitionNumnber);
+        }
         ip = next;
     }
     if (nameiparent) {
@@ -768,13 +788,21 @@ static struct inode* namex(char* path, int nameiparent, char* name)
     return ip;
 }
 
+
+
 struct inode* namei(char* path)
 {
     char name[DIRSIZ];
-    return namex(path, 0, name);
+    return namex(path, 0, 0,name);
+}
+
+struct inode* nameiIgnoreMounts(char* path)
+{
+    char name[DIRSIZ];
+    return namex(path, 0, 1,name);
 }
 
 struct inode* nameiparent(char* path, char* name)
 {
-    return namex(path, 1, name);
+    return namex(path, 1, 0,name);
 }

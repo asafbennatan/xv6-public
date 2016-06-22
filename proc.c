@@ -6,6 +6,9 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "fs.h"
+
+#include "file.h"
 
 struct {
   struct spinlock lock;
@@ -192,9 +195,9 @@ exit(void)
     }
   }
 
-  begin_op();
+  begin_op(proc->cwd->part->number);
   iput(proc->cwd);
-  end_op();
+  end_op(proc->cwd->part->number);
   proc->cwd = 0;
 
   acquire(&ptable.lock);
@@ -352,7 +355,7 @@ forkret(void)
     int bootfrom=iinit(proc,ROOTDEV);
     // iinitDone=1;
     cprintf("boot from after iinit is %d \n",bootfrom);
-    initlog(ROOTDEV,bootfrom);
+    initlog(ROOTDEV);
    
     //cprintf("after initlog \n");
   }

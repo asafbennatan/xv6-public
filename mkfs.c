@@ -132,7 +132,6 @@ int main(int argc, char* argv[])
         
          // 1 fs block = 1 disk sector
     nmeta = 1 + nlog + ninodeblocks + nbitmap;
-    freeblock = nmeta;
     nblocks = FSSIZE/NPARTITIONS - nmeta;
    
     mbrI.partitions[j].offset = endOffset;
@@ -203,6 +202,7 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
 
   
     freeinode=1;
+    freeblock = nmeta;
     rootino = ialloc(T_DIR,partitionNumber);
     assert(rootino == ROOTINO);
 
@@ -262,7 +262,7 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
     din.size = xint(off);
     winode(rootino, &din,partitionNumber);
 
-    balloc(sb[partitionNumber].offset+freeblock,partitionNumber);
+    balloc(freeblock,partitionNumber);
 
     if (hasInit && hasSh) {
         mbrI.partitions[partitionNumber].flags = PART_BOOTABLE;

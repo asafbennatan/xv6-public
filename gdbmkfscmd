@@ -1,0 +1,1 @@
+run fs.img bootblock kernel README _cat _echo _forktest _grep _init _kill _ln _ls _mkdir _rm _sh _stressfs _wc _zombie
