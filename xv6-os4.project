@@ -191,6 +191,7 @@
     <File Name="x86.h"/>
     <File Name="xv6-os4.project"/>
     <File Name="zombie.c"/>
+    <File Name="mount.c"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>

@@ -444,7 +444,6 @@ int sys_mount(void)
     ilock(i);
     i->major=MOUNTING_POINT;
     i->minor=partitionNumber;
-   // iupdate(i);
     iunlockput(i);
     return 0;
 }

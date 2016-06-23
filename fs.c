@@ -24,7 +24,6 @@
 static void itrunc(struct inode*);
 struct mbr mbrI;
 int bootfrom = -1;
-int currentPart = -1;
 struct file * fstabFd;
 
 // Read the super block.
@@ -222,7 +221,7 @@ void initMbr(int dev)
     for (i = 0; i < NPARTITIONS; i++) {
         if (mbrI.partitions[i].flags >= PART_BOOTABLE && bootfrom == -1) {
             bootfrom = i;
-            currentPart = i;
+            
         }
         partitions[i].dev = dev;
         partitions[i].flags = mbrI.partitions[i].flags;
@@ -253,15 +252,12 @@ int iinit(struct proc* p, int dev)
     if (bootfrom == -1) {
         panic("no bootable partition");
     }
-    readsb(dev, bootfrom);
-    sb = sbs[bootfrom];
-
-    // set root inode
     rootNode->part = &(partitions[bootfrom]);
-    // release(&icache.lock);
-
-    // cprintf("root node init %d \n",rootNode->part->offset);
-    cprintf("sb: offset %d size %d nblocks %d ninodes %d nlog %d logstart %d inodestart %d bmap start %d\n",
+    int i;
+    for(i=0;i<NPARTITIONS;i++){
+    readsb(dev, i);
+    sb = sbs[i];
+     cprintf("sb: offset %d size %d nblocks %d ninodes %d nlog %d logstart %d inodestart %d bmap start %d\n",
             sb.offset,
             sb.size,
             sb.nblocks,
@@ -270,6 +266,15 @@ int iinit(struct proc* p, int dev)
             sb.logstart,
             sb.inodestart,
             sb.bmapstart);
+    }
+    
+
+    // set root inode
+    
+    // release(&icache.lock);
+
+    // cprintf("root node init %d \n",rootNode->part->offset);
+   
             
     
             return bootfrom;
@@ -419,7 +424,7 @@ void iunlock(struct inode* ip)
                   //  cprintf("iunlock \n");
 
     if (ip == 0 || !(ip->flags & I_BUSY) || ip->ref < 1) {
-        // cprintf("iunlock %d ",ip);
+        // cprintf("iunlock ilock%d ",ip);
         panic("iunlock");
     }
 

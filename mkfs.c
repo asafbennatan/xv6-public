@@ -219,10 +219,11 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
     int hasInit = 0;
 
     for (i = 4; i < argc; i++) {
-        assert(index(argv[i], '/') == 0);
+        char * filename=argv[i];
+        assert(index(filename, '/') == 0);
 
-        if ((fd = open(argv[i], 0)) < 0) {
-            perror(argv[i]);
+        if ((fd = open(filename, 0)) < 0) {
+            perror(filename);
             exit(5);
         }
 
@@ -230,21 +231,21 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
         // The binaries are named _rm, _cat, etc. to keep the
         // build operating system from trying to execute them
         // in place of system binaries like rm and cat.
-        if (argv[i][0] == '_')
-            ++argv[i];
+        if (filename[0] == '_')
+            ++filename;
 
-        if (strcmp("sh", argv[i]) == 0) {
+        if (strcmp("sh", filename) == 0) {
             hasSh = 1;
         }
 
-        if (strcmp("init", argv[i]) == 0) {
+        if (strcmp("init", filename) == 0) {
             hasInit = 1;
         }
         inum = ialloc(T_FILE,partitionNumber);
-        printf("appending %s \n",argv[i]);
+        printf("appending %s \n",filename);
         bzero(&de, sizeof(de));
         de.inum = xshort(inum);
-        strncpy(de.name, argv[i], DIRSIZ);
+        strncpy(de.name, filename, DIRSIZ);
         iappend(rootino, &de, sizeof(de),partitionNumber);
 
         while ((cc = read(fd, buf, sizeof(buf))) > 0)
@@ -314,11 +315,14 @@ void rinode(uint inum, struct dinode* ip,uint partitionNumber)
 
 void rsect(uint sec, void* buf)
 {
+        int number=-1;
+
     if (lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE) {
         perror("lseek");
         exit(8);
     }
-    if (read(fsfd, buf, BSIZE) != BSIZE) {
+    if ((number=read(fsfd, buf, BSIZE)) != BSIZE) {
+        printf("read %d \n",number);
         perror("read");
         exit(9);
     }
