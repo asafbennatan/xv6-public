@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
     assert((BSIZE % sizeof(struct dinode)) == 0);
     assert((BSIZE % sizeof(struct dirent)) == 0);
-    printf(" writing image to %s \n",argv[1]);
+    //printf(" writing image to %s \n",argv[1]);
 
     fsfd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (fsfd < 0) {
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
     close(bootblockfd);
     close(kernelfd);
     int j;
-    int endOffset=i+1;
+    int endOffset=i+1+100;
     for(j=0;j<NPARTITIONS;j++){
       
         
@@ -162,8 +162,9 @@ int main(int argc, char* argv[])
     }
    
      // the first free block that we can allocate
+    int sizeofmbr = i;
     i=i+1;
-      for (; i < FSSIZE; i++)
+      for (; i < FSSIZE + sizeofmbr; i++)
         wsect(i, zeroes);
         
    for(i=0;i<NPARTITIONS;i++)     
@@ -194,8 +195,8 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
     struct dirent de;
     char buf[BSIZE];
     struct dinode din;
-    printf("**********STARTED WRITING PARTITION %d ************* \n",partitionNumber);
-    printf("superblock being wrtten at block %d byteoffset %x \n",mbrI.partitions[0].offset,mbrI.partitions[0].offset * BSIZE);
+    //printf("**********STARTED WRITING PARTITION %d ************* \n",partitionNumber);
+    //printf("superblock being wrtten at block %d byteoffset %x \n",mbrI.partitions[partitionNumber].offset,mbrI.partitions[partitionNumber].offset * BSIZE);
     memset(buf, 0, sizeof(buf));
     memmove(buf, &sb, sizeof(struct superblock));
     wsect(mbrI.partitions[partitionNumber].offset, buf);
@@ -242,7 +243,7 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
             hasInit = 1;
         }
         inum = ialloc(T_FILE,partitionNumber);
-        printf("appending %s \n",filename);
+       // printf("appending %s \n",filename);
         bzero(&de, sizeof(de));
         de.inum = xshort(inum);
         strncpy(de.name, filename, DIRSIZ);
@@ -252,7 +253,7 @@ void writePartition(uint partitionNumber,int argc,char* argv[]){
             iappend(inum, buf, cc,partitionNumber);
 
         close(fd);
-            printf("finished appending \n");
+           // printf("finished appending \n");
 
     }
     // fix size of root inode dir
@@ -291,7 +292,7 @@ void winode(uint inum, struct dinode* ip,uint partitionNumber)
     struct dinode* dip;
 
     bn = IBLOCK(inum, sb[partitionNumber]);
-    printf("winode at bn %d",bn);
+    //printf("winode at bn %d",bn);
     rsect(bn, buf);
     dip = ((struct dinode*)buf) + (inum % IPB);
     *dip = *ip;
@@ -306,18 +307,19 @@ void rinode(uint inum, struct dinode* ip,uint partitionNumber)
 
     
     bn = IBLOCK(inum, sb[partitionNumber]);
-    printf("inum %d , bn %d \n",inum,bn);
+    //printf("inum %d , bn %d \n",inum,bn);
     rsect(bn, buf);
     dip = ((struct dinode*)buf) + (inum % IPB);
-    printf("size %d \n",dip->size);
+    //printf("size %d \n",dip->size);
     *ip = *dip;
 }
 
 void rsect(uint sec, void* buf)
 {
         int number=-1;
-
-    if (lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE) {
+uint offset=sec * BSIZE;
+//printf("read offset is %ud \n",offset);
+    if (lseek(fsfd,offset,  0) != sec * BSIZE) {
         perror("lseek");
         exit(8);
     }
@@ -330,7 +332,7 @@ void rsect(uint sec, void* buf)
 
 void readmbr(void* buf)
 {
-    printf("readmbr");
+    //printf("readmbr");
     rsect(0, buf);
 }
 
@@ -390,13 +392,13 @@ void balloc(int used,uint partitionNumber)
     uchar buf[BSIZE];
     int i;
 
-    printf("balloc: first %d blocks have been allocated\n", used);
+    //printf("balloc: first %d blocks have been allocated\n", used);
     assert(used < BSIZE * 8);
     bzero(buf, BSIZE);
     for (i = 0; i < used; i++) {
         buf[i / 8] = buf[i / 8] | (0x1 << (i % 8));
     }
-    printf("balloc: write bitmap block at sector %d\n", sb[partitionNumber].offset+sb[partitionNumber].bmapstart);
+    //printf("balloc: write bitmap block at sector %d\n", sb[partitionNumber].offset+sb[partitionNumber].bmapstart);
     wsect(sb[partitionNumber].offset+sb[partitionNumber].bmapstart, buf);
 }
 
@@ -426,6 +428,7 @@ void iappend(uint inum, void* xp, int n,uint partitionNumber)
             if (xint(din.addrs[NDIRECT]) == 0) {
                 din.addrs[NDIRECT] = xint(freeblock++);
             }   
+            //printf("reading indirect block  %d from fs\n", sb[partitionNumber].offset+din.addrs[NDIRECT]);
             rsect(xint(sb[partitionNumber].offset+din.addrs[NDIRECT]), (char*)indirect);
             if (indirect[fbn - NDIRECT] == 0) {
                 indirect[fbn - NDIRECT] = xint(freeblock++);
@@ -434,8 +437,10 @@ void iappend(uint inum, void* xp, int n,uint partitionNumber)
             x = xint(indirect[fbn - NDIRECT]);
         }
         n1 = min(n, (fbn + 1) * BSIZE - off);
+        //printf("reading block  %d from fs\n", sb[partitionNumber].offset+x);
         rsect(sb[partitionNumber].offset+x, buf);
-        bcopy(p, buf + off - (fbn * BSIZE), n1);
+
+       bcopy(p, buf + off - (fbn * BSIZE), n1);
         wsect(sb[partitionNumber].offset+x, buf);
         n -= n1;
         off += n1;
