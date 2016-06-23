@@ -368,7 +368,7 @@ int sys_chdir(void)
         end_op(proc->cwd->part->number);
         return -1;
     }
-    cprintf("cd path %s \n",path);
+    //cprintf("cd path %s \n",path);
     ilock(ip);
     if (ip->type != T_DIR) {
         iunlockput(ip);
