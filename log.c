@@ -54,7 +54,8 @@ initlog(int dev)
 {
   if (sizeof(struct logheader) >= BSIZE)
     panic("initlog: too big logheader");
-for(int i=0;i<NPARTITIONS;i++){
+    int i;
+for(i=0;i<NPARTITIONS;i++){
      initlock(&logs[i].lock, "log");
  // readsb(dev, partitionNumber);
   logs[i].start = sbs[i].offset+sbs[i].logstart;
