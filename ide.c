@@ -124,7 +124,7 @@ ideintr(void)
   
   // Start disk on next buf in queue.
   if(idequeue != 0){
-            cprintf("ideintr \n");
+            //cprintf("ideintr \n");
                 idestart(idequeue);
 
 
