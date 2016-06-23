@@ -352,7 +352,7 @@ forkret(void)
     // be run from main().
     first = 0;
     cprintf("cpu %d iinit \n",cpu->id);
-    int bootfrom=iinit(proc,ROOTDEV);
+iinit(proc,ROOTDEV);
     // iinitDone=1;
    // cprintf("boot from after iinit is %d \n",bootfrom);
     initlog(ROOTDEV);
