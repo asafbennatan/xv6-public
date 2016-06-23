@@ -362,11 +362,13 @@ int sys_chdir(void)
     char* path;
     struct inode* ip;
 
+
     begin_op(proc->cwd->part->number);
     if (argstr(0, &path) < 0 || (ip = namei(path)) == 0) {
         end_op(proc->cwd->part->number);
         return -1;
     }
+    cprintf("cd path %s \n",path);
     ilock(ip);
     if (ip->type != T_DIR) {
         iunlockput(ip);
@@ -436,14 +438,22 @@ int sys_mount(void)
     if (argstr(0, &path) < 0 || argint(1, (int*)&partitionNumber) < 0 || partitionNumber < 0 || partitionNumber > NPARTITIONS) {
         return -1;
     }
+    //cprintf("cwd %d , part %d \n",proc->cwd->inum,proc->cwd->part->number);
 
     i=nameiIgnoreMounts(path);
     if(i==0){
         return -1;
     }
     ilock(i);
+    if(i->type!=T_DIR){
+        return -1;
+    }
     i->major=MOUNTING_POINT;
     i->minor=partitionNumber;
+    begin_op(i->part->number);
+    iupdate(i);
+    end_op(i->part->number);
     iunlockput(i);
+   // cprintf("cwd %d , part %d \n",proc->cwd->inum,proc->cwd->part->number);
     return 0;
 }
