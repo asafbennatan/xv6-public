@@ -5320,7 +5320,7 @@ static struct inode* namex(char* path, int nameiparent, int ignoreMounts, char* 
 80102b6e:	83 ec 04             	sub    $0x4,%esp
 80102b71:	50                   	push   %eax
 80102b72:	6a 01                	push   $0x1
-80102b74:	6a 01                	push   $0x1
+80102b74:	6a 00                	push   $0x0
 80102b76:	e8 27 f2 ff ff       	call   80101da2 <iget>
 80102b7b:	83 c4 10             	add    $0x10,%esp
 80102b7e:	89 45 f4             	mov    %eax,-0xc(%ebp)
@@ -5452,7 +5452,7 @@ static struct inode* namex(char* path, int nameiparent, int ignoreMounts, char* 
 80102ca8:	83 ec 04             	sub    $0x4,%esp
 80102cab:	ff 75 ec             	pushl  -0x14(%ebp)
 80102cae:	6a 01                	push   $0x1
-80102cb0:	6a 01                	push   $0x1
+80102cb0:	6a 00                	push   $0x0
 80102cb2:	e8 eb f0 ff ff       	call   80101da2 <iget>
 80102cb7:	83 c4 10             	add    $0x10,%esp
 80102cba:	89 45 f4             	mov    %eax,-0xc(%ebp)
@@ -10978,7 +10978,7 @@ forkret(void)
 iinit(proc,ROOTDEV);
 80105873:	65 a1 04 00 00 00    	mov    %gs:0x4,%eax
 80105879:	83 ec 08             	sub    $0x8,%esp
-8010587c:	6a 01                	push   $0x1
+8010587c:	6a 00                	push   $0x0
 8010587e:	50                   	push   %eax
 8010587f:	e8 ae c1 ff ff       	call   80101a32 <iinit>
 80105884:	83 c4 10             	add    $0x10,%esp
@@ -10986,7 +10986,7 @@ iinit(proc,ROOTDEV);
    // cprintf("boot from after iinit is %d \n",bootfrom);
     initlog(ROOTDEV);
 80105887:	83 ec 0c             	sub    $0xc,%esp
-8010588a:	6a 01                	push   $0x1
+8010588a:	6a 00                	push   $0x0
 8010588c:	e8 b3 e2 ff ff       	call   80103b44 <initlog>
 80105891:	83 c4 10             	add    $0x10,%esp
  // }
