@@ -56,12 +56,15 @@ initlog(int dev)
     panic("initlog: too big logheader");
     int i;
 for(i=0;i<NPARTITIONS;i++){
-     initlock(&logs[i].lock, "log");
+    if(mbrI.partitions[i].size > 0){
+        initlock(&logs[i].lock, "log");
  // readsb(dev, partitionNumber);
   logs[i].start = sbs[i].offset+sbs[i].logstart;
   logs[i].size =  sbs[i].nlog;
   logs[i].dev = dev;
   recover_from_log(i);
+    }
+     
 }
  
 }

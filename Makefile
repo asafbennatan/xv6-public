@@ -188,7 +188,7 @@ fs.img: mkfs bootblock kernel README $(UPROGS)
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*.o *.d *.asm *.sym vectors.S bootblock entryother \
-	initcode initcode.out kernel xv6.img fs.img kernelmemfs mkfs \
+	initcode initcode.out kernel fs.img kernelmemfs mkfs \
 	.gdbinit \
 	$(UPROGS)
 	
@@ -225,7 +225,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 2
 endif
-QEMUOPTS = -hda fs.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -hdb xv6.img fs.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
 qemu: fs.img 
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)

@@ -22,7 +22,6 @@
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
-struct mbr mbrI;
 int bootfrom = -1;
 struct file* fstabFd;
 

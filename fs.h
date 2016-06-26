@@ -58,5 +58,7 @@ struct dirent {
 
 struct superblock sbs[NPARTITIONS];   // there should be one per dev, but we run with one dev
 struct partition partitions[NPARTITIONS];
+struct mbr mbrI;
+
 
 
