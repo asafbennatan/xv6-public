@@ -100,7 +100,7 @@ struct buf*
 bread(uint dev, uint blockno)
 {
   struct buf *b;
-
+//cprintf("bread \n");
   b = bget(dev, blockno);
   if(!(b->flags & B_VALID)) {
     iderw(b);

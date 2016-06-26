@@ -231,7 +231,7 @@ static struct inode* create(char* path, short type, short major, short minor)
     uint off;
     struct inode* ip, *dp;
     char name[DIRSIZ];
-  //   cprintf("path %s\n",path);
+     //cprintf("path %s\n",path);
     if ((dp = nameiparent(path, name)) == 0)
         return 0;
         
@@ -249,7 +249,7 @@ static struct inode* create(char* path, short type, short major, short minor)
         iunlockput(ip);
         return 0;
     }
-   // cprintf("dp is %d , %d \n",dp->inum, dp->part->number);
+    //cprintf("dp is %d , %d \n",dp->inum, dp->part->number);
     if ((ip = ialloc(dp->dev, type, dp->part->number)) == 0)
         panic("create: ialloc");
 
@@ -257,7 +257,7 @@ static struct inode* create(char* path, short type, short major, short minor)
     ip->major = major;
     ip->minor = minor;
     ip->nlink = 1;
-    //cprintf("ip is %d , %d \n",ip->inum,ip->part->number);
+   // cprintf("ip is %d , %d \n",ip->inum,ip->part->number);
     iupdate(ip);
 
     if (type == T_DIR) { // Create . and .. entries.

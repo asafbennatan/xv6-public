@@ -73,8 +73,8 @@ idestart(struct buf *b)
 {
   if(b == 0)
     panic("idestart");
-  if(b->blockno >= FSSIZE){
-      cprintf("block %d \n");
+  if(b->blockno >= FSSIZE+mbrI.partitions[0].offset){
+      cprintf("block %d \n",b->blockno);
           panic("incorrect blockno");
 
   }

@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
      // the first free block that we can allocate
     int sizeofmbr = i;
     i=i+1;
-      for (; i < FSSIZE + sizeofmbr; i++)
+      for (; i < FSSIZE + sizeofmbr+1000; i++)
         wsect(i, zeroes);
         
    for(i=0;i<NPARTITIONS;i++)     
