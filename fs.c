@@ -230,7 +230,7 @@ int iinit(struct proc* p, int dev)
     struct inode* rootNode;
     struct superblock sb;
     // TODO: change ot iterate over all partitions
-
+    cprintf("kernal by Asaf and Ilana \n");
     initlock(&icache.lock, "icache");
 
     rootNode = p->cwd;

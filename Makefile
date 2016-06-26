@@ -227,13 +227,13 @@ CPUS := 2
 endif
 QEMUOPTS = -hdb xv6.img fs.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: fs.img 
+qemu: fs.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 qemu-memfs: xv6memfs.img
 	$(QEMU) xv6memfs.img -smp $(CPUS) -m 256
 
-qemu-nox: fs.img xv6.img
+qemu-nox: fs.img 
 	$(QEMU) -nographic $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl
