@@ -766,21 +766,23 @@ static struct inode* namex(char* path, int nameiparent, int ignoreMounts, char* 
         }
         // handle mounting points
 
-        if (!ignoreMounts && !nameiparent && next->type == T_DIR && next->major == MOUNTING_POINT) {
+        if (!ignoreMounts  && next->type == T_DIR && next->major == MOUNTING_POINT) {
            // cprintf("got into condition \n");
                         iunlock(next);
 
             // iunlockput(ip);
             uint partitionNumnber = next->minor;
             ip = iget(ROOTDEV, 1, partitionNumnber);
-            return ip;
         }
-        iunlock(next);
+        else{
+            iunlock(next);
 
         // testing
 
         ip = next;
     }
+        }
+       
     if (nameiparent) {
         iput(ip);
         return 0;
